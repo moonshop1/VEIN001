@@ -2,382 +2,310 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>V.E.I.N. | CASEFILE_001_ANALOG</title>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <title>V.E.I.N. | ARCHIVE_001</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime:wght@400;700&display=swap');
+
         :root {
-            --paper-texture: url('https://www.transparenttextures.com/patterns/cream-paper.png');
-            --desk-texture: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
-            --light-color: rgba(255, 220, 180, 0.9); /* Warm Tungsten Light */
-            --ink-color: #1a1110;
+            --term-green: #33ff33;
+            --term-cyan: #00ffff;
+            --term-red: #ff3333;
+            --bg-color: #050505;
         }
 
-        body, html {
+        body {
             margin: 0; padding: 0;
-            background-color: #050505;
-            height: 100vh; width: 100vw;
-            overflow: hidden; cursor: none;
-            font-family: 'Courier Prime', monospace;
-            user-select: none;
+            background-color: var(--bg-color);
+            color: var(--term-cyan);
+            font-family: 'VT323', monospace;
+            height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* --- ANALOG CAMERA EFFECTS --- */
-        #grain {
+        /* --- CRT SCANLINE OVERLAY (THE "NIL" LOOK) --- */
+        .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-            opacity: 0.15; pointer-events: none; z-index: 9999;
-            animation: grain-shift 0.5s steps(5) infinite;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            z-index: 9999; pointer-events: none;
         }
-        #vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 40%, #000 120%);
-            z-index: 9998; pointer-events: none;
+        .scanlines::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
-        @keyframes grain-shift { 0% {background-position: 0 0;} 100% {background-position: 100px 100px;} }
-
-        /* --- THE FLASHLIGHT --- */
-        #darkness {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle 350px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(5, 5, 5, 0.98) 100%);
-            z-index: 9000; pointer-events: none; mix-blend-mode: multiply;
-        }
-        #light-beam {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle 200px at var(--x, 50%) var(--y, 50%), var(--light-color) 0%, transparent 80%);
-            z-index: 8000; pointer-events: none; mix-blend-mode: soft-light;
-            opacity: 0.6;
-        }
-
-        /* --- PHYSICAL DESK --- */
-        #desk {
-            position: absolute; width: 100%; height: 100%;
-            background: #1a1510;
-            background-image: var(--desk-texture);
-            perspective: 1000px;
-        }
-
-        /* --- THE PAPER DOCUMENT --- */
-        #dossier {
-            position: absolute; width: 650px; height: 850px;
-            background-color: #f4e9d6;
-            background-image: var(--paper-texture);
-            top: 5%; left: 30%;
-            box-shadow: 2px 5px 15px rgba(0,0,0,0.8);
-            transform: rotate(-1.5deg);
-            padding: 60px; color: var(--ink-color);
-            transition: transform 0.1s;
-        }
-        
-        /* Realistic Ink Bleed Text */
-        p, h1, h3 { 
-            opacity: 0.9; 
-            text-shadow: 0 0 1px rgba(0,0,0,0.2); 
-            mix-blend-mode: multiply;
-        }
-
-        .stamp {
-            position: absolute; top: 40px; right: 40px;
-            border: 6px double #8b0000; color: #8b0000;
-            padding: 10px 20px; font-family: 'Special Elite'; font-size: 2rem;
-            transform: rotate(15deg); opacity: 0.8; mix-blend-mode: multiply;
-        }
-
-        /* --- EVIDENCE ITEMS --- */
-        .photo-print {
-            position: absolute; background: #fff; padding: 12px 12px 50px 12px;
-            width: 220px; box-shadow: 5px 5px 20px rgba(0,0,0,0.7);
-            top: 50%; left: 15%; transform: rotate(4deg);
-            filter: contrast(1.1) sepia(0.3);
-            z-index: 50; cursor: grab;
-        }
-        .photo-print img { width: 100%; pointer-events: none; }
-        .photo-caption {
-            font-family: 'Special Elite'; font-size: 0.8rem;
-            color: #333; position: absolute; bottom: 15px; left: 15px;
-        }
-
-        /* --- THE "SEISMIC ANCHOR" (Physical Radar) --- */
-        #anchor-device {
-            position: absolute; bottom: 100px; right: 100px;
-            width: 180px; height: 100px;
-            background: #222;
-            border-top: 2px solid #444; border-left: 2px solid #444;
-            border-bottom: 5px solid #000; border-right: 5px solid #000;
-            box-shadow: 10px 20px 40px rgba(0,0,0,0.9);
-            border-radius: 4px; z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transform: rotate(-2deg); cursor: pointer;
-        }
-        
-        /* The LED Light */
-        #led-light {
-            width: 15px; height: 15px; background: #300;
-            border-radius: 50%; box-shadow: inset 2px 2px 5px #000;
-            margin-bottom: 10px; border: 1px solid #000;
-        }
-        .led-active { background: #ff0000 !important; box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000 !important; }
-        
-        /* The Label */
-        .device-label {
-            font-family: sans-serif; font-size: 0.6rem; color: #aaa;
-            letter-spacing: 1px; text-transform: uppercase;
-            border: 1px solid #555; padding: 2px 5px; background: #111;
-        }
-
-        /* --- HORROR ELEMENTS --- */
-        .ink-stain {
-            position: absolute; background: #080000;
-            border-radius: 50%; filter: blur(4px);
-            opacity: 0.9; mix-blend-mode: multiply;
-            transition: transform 5s ease-out;
-        }
-        
-        #hand-shadow {
-            position: fixed; top: -20%; left: -20%; width: 150%; height: 150%;
-            background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, transparent 60%);
-            z-index: 8500; pointer-events: none; opacity: 0; transition: opacity 1s;
-        }
+        .flicker { animation: flicker 0.15s infinite; }
+        @keyframes flicker { 0% {opacity: 0.97;} 50% {opacity: 0.99;} 100% {opacity: 0.96;} }
 
         /* --- LOGIN SCREEN --- */
-        #gate {
-            position: fixed; width: 100%; height: 100%; background: #000;
-            z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 1000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        #p-in {
-            background: transparent; border: none; border-bottom: 2px solid #555;
-            color: #ddd; font-family: 'Courier Prime'; font-size: 2rem;
-            text-align: center; width: 300px; outline: none; letter-spacing: 5px;
+        input {
+            background: transparent; border: none; border-bottom: 2px solid var(--term-cyan);
+            color: var(--term-cyan); font-family: 'VT323'; font-size: 3rem;
+            text-align: center; letter-spacing: 10px; outline: none; width: 300px;
         }
 
-        /* --- ANIMATIONS --- */
-        @keyframes shake-desk {
-            0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, 1px); }
+        /* --- MAIN CONTAINER --- */
+        #main-container {
+            display: none; /* Hidden until login */
+            width: 900px; height: 90%;
+            margin-top: 20px;
+            border: 1px solid #333;
+            position: relative;
+            background: rgba(0, 20, 20, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
         }
-        .shaking { animation: shake-desk 0.1s infinite; }
+
+        /* --- THE DOCUMENT (PAPER LOOK INSIDE TERMINAL) --- */
+        #doc-viewer {
+            width: 100%; height: 75%;
+            overflow-y: auto; padding: 40px; box-sizing: border-box;
+            font-family: 'Courier Prime', monospace; /* Typewriter font */
+            color: #ddd; text-shadow: 0 0 2px var(--term-cyan);
+        }
+
+        /* --- EVIDENCE PHOTO (PAPERCLIPPED) --- */
+        #evidence-img {
+            float: right; width: 250px;
+            border: 4px solid #fff; margin: 0 0 20px 20px;
+            transform: rotate(2deg); opacity: 0.8;
+            filter: grayscale(100%) contrast(150%) sepia(20%);
+        }
+
+        /* --- TEXT STYLES --- */
+        h1 { border-bottom: 2px solid var(--term-cyan); font-family: 'VT323'; font-size: 3rem; margin-top: 0; color: var(--term-cyan); }
+        h3 { background: var(--term-cyan); color: #000; display: inline-block; padding: 0 5px; font-family: 'VT323'; margin-top: 20px; }
+        p { font-size: 1.1rem; line-height: 1.4; }
+        .redacted { background: var(--term-cyan); color: var(--term-cyan); cursor: help; }
+        .redacted:hover { background: transparent; color: #fff; }
+        .corrupted-text { font-family: 'VT323'; color: var(--term-red); letter-spacing: 2px; }
+
+        /* --- THE RADAR / CONSOLE (BOTTOM) --- */
+        #console-panel {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 25%;
+            border-top: 2px solid var(--term-cyan);
+            background: #000; display: flex;
+        }
+
+        #radar-box {
+            width: 300px; height: 100%;
+            border-right: 1px solid #333;
+            position: relative;
+        }
+        canvas { width: 100%; height: 100%; }
+
+        #status-box {
+            flex-grow: 1; padding: 15px;
+            font-family: 'VT323'; font-size: 1.2rem;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        /* --- BUTTONS --- */
+        button {
+            background: transparent; border: 1px solid var(--term-red);
+            color: var(--term-red); font-family: 'VT323'; font-size: 1.5rem;
+            cursor: pointer; padding: 5px 15px; text-transform: uppercase;
+            animation: pulse 1s infinite; display: none;
+        }
+        button:hover { background: var(--term-red); color: #000; }
+        @keyframes pulse { 0% {opacity:0.5;} 50% {opacity:1;} 100% {opacity:0.5;} }
+
     </style>
 </head>
-<body>
+<body class="flicker">
 
-    <div id="grain"></div>
-    <div id="vignette"></div>
-    <div id="darkness"></div>
-    <div id="light-beam"></div>
-    <div id="hand-shadow"></div>
+    <div class="scanlines"></div>
 
-    <div id="gate">
-        <h2 style="color: #888; font-weight: normal;">V.E.I.N. ARCHIVE // PHYSICAL ACCESS</h2>
+    <div id="login-overlay">
+        <h1 style="border:none;">V.E.I.N. SECURE TERMINAL</h1>
         <input type="password" id="p-in" maxlength="6" autofocus placeholder="000000">
-        <p style="color: #444; margin-top: 20px; font-size: 0.8rem;">( 001 - 001 )</p>
+        <p style="opacity:0.5;">[ ENTITY 001 ACCESS ]</p>
     </div>
 
-    <div id="desk">
+    <div id="main-container">
+        
+        <div id="doc-viewer">
+            <img id="evidence-img" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmpmbXc0OWpya2JxOTE3MWtvNWphbDg5aWJic2k3MWNvM3VjZXN1biZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1Pq6EZxEQ7sbu/giphy.gif">
+            
+            <h1>INCIDENT REPORT: 001</h1>
+            <p><strong>CASE ID:</strong> 3161400187<br><strong>SUBJECT:</strong> THE SPATIAL ERASER</p>
+            
+            <p id="p1">Entity 001 is the <span class="redacted">Primary Correction Protocol</span> of the Inter-Zone. It does not exist as biological matter. It is a sentient deletion algorithm that targets specific coordinates in space-time.</p>
 
-        <div id="anchor-device" title="CLICK TO STABILIZE">
-            <div id="led-light"></div>
-            <div class="device-label">SEISMIC ANCHOR</div>
+            <h3>I. THE "NIL" EVENT</h3>
+            <p id="p2">Subject NIL reached the Terminus on Feb 16, 2026. The Entity manifested immediately. It did not kill him. It <span class="redacted">Inverted his Sync-Core</span>, trapping him in a perpetual glitch state.</p>
+
+            <h3>II. MECHANICS</h3>
+            <p id="p3">001 manifests as a "Void Hand." It erases path geometry. Survival requires maintaining **Critical Velocity**. If you stop, you are deleted.</p>
+
+            <h3>III. CURRENT STATUS</h3>
+            <p id="p4">Sensors indicate 001 is currently tracking this specific terminal. The text you are reading is being actively rewritten by the Entity.</p>
+
+            <br>
+            <p style="font-family:'VT323'; opacity:0.6;">> END OF FILE.</p>
         </div>
 
-        <div class="photo-print" id="skull-photo">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmpmbXc0OWpya2JxOTE3MWtvNWphbDg5aWJic2k3MWNvM3VjZXN1biZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1Pq6EZxEQ7sbu/giphy.gif">
-            <div class="photo-caption">EVID_001.jpg</div>
-        </div>
-
-        <div id="dossier">
-            <div class="stamp">CLASSIFIED</div>
-            
-            <h1 style="border-bottom: 3px solid #1a1110;">INCIDENT: 001</h1>
-            <p><strong>ARCHITECT:</strong> John Flame<br><strong>SUBJECT:</strong> The Void Hand</p>
-            
-            <hr style="border: 1px solid #1a1110; margin: 20px 0;">
-
-            <h3>I. THE ERASURE</h3>
-            <p>Entity 001 is a correction protocol. It deletes the ground beneath us. In the <span style="background:black; color:white; padding:0 5px;">NIL Event</span>, it erased 4,000 studs of geometry in 0.4 seconds.</p>
-
-            <h3>II. SURVIVAL</h3>
-            <p>If you hear the humming, do not stop. The Entity tracks vibrations. If the Seismic Anchor on your desk begins to click rapidly, <strong>MANUAL RESET REQUIRED IMMEDIATELY</strong>.</p>
-
-            <h3>III. FINAL ENTRY</h3>
-            <p>The ink... it's moving. It's not drying. It's spreading. If you are reading this, the document itself is a conduit. Don't let the shadow touch you.</p>
-
-            <div style="margin-top: 60px; text-align: right; font-size: 0.8rem; opacity: 0.7;">
-                SIGNED: <i>J. Flame</i>
+        <div id="console-panel">
+            <div id="radar-box">
+                <canvas id="radar"></canvas>
+                <div style="position:absolute; top:5px; left:5px; color:var(--term-cyan); font-size:0.8rem;">SEISMIC_MONITOR</div>
+            </div>
+            <div id="status-box">
+                <div id="log-stream">> SYSTEM_READY...</div>
+                <div style="text-align:right;">
+                    PROXIMITY: <span id="prox-val">0%</span><br>
+                    <button id="stab-btn">[ STABILIZE SIGNAL ]</button>
+                </div>
             </div>
         </div>
 
     </div>
 
     <script>
-        const SECRET = "001001";
-        const STATE = {
-            threat: 0,
-            active: false
-        };
+        // --- SETUP ---
+        const CODE = "001001";
+        const cvs = document.getElementById('radar');
+        const ctx = cvs.getContext('2d');
+        const login = document.getElementById('login-overlay');
+        const main = document.getElementById('main-container');
+        const pass = document.getElementById('p-in');
+        const proxTxt = document.getElementById('prox-val');
+        const logTxt = document.getElementById('log-stream');
+        const btn = document.getElementById('stab-btn');
         
-        const DOM = {
-            gate: document.getElementById('gate'),
-            pass: document.getElementById('p-in'),
-            desk: document.getElementById('desk'),
-            doc: document.getElementById('dossier'),
-            led: document.getElementById('led-light'),
-            device: document.getElementById('anchor-device'),
-            shadow: document.getElementById('hand-shadow'),
-            darkness: document.getElementById('darkness'),
-            beam: document.getElementById('light-beam')
-        };
-
-        const AUDIO = new (window.AudioContext || window.webkitAudioContext)();
+        let threat = 0;
+        let instability = 0; // 0 to 10
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         // --- AUDIO ENGINE ---
-        function beep(freq, dur) {
-            const o = AUDIO.createOscillator();
-            const g = AUDIO.createGain();
-            o.type = 'square';
-            o.frequency.value = freq;
-            g.gain.setValueAtTime(0.1, AUDIO.currentTime); // Low volume (realistic)
-            g.gain.exponentialRampToValueAtTime(0.001, AUDIO.currentTime + dur);
-            o.connect(g); g.connect(AUDIO.destination);
-            o.start(); o.stop(AUDIO.currentTime + dur);
+        function beep(f, t, vol=0.05) {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = t; o.frequency.value = f;
+            g.gain.setValueAtTime(vol, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + 0.1);
         }
 
-        function rumble() {
-            const o = AUDIO.createOscillator();
-            const g = AUDIO.createGain();
-            o.type = 'sawtooth';
-            o.frequency.value = 40;
-            g.gain.setValueAtTime(0.2, AUDIO.currentTime);
-            g.gain.linearRampToValueAtTime(0.001, AUDIO.currentTime + 1.0);
-            o.connect(g); g.connect(AUDIO.destination);
-            o.start(); o.stop(AUDIO.currentTime + 1.0);
+        function hum() {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = 'sawtooth'; o.frequency.value = 50 + (threat);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            g.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + 0.5);
         }
-
-        // --- FLASHLIGHT ---
-        document.addEventListener('mousemove', (e) => {
-            const x = e.clientX;
-            const y = e.clientY;
-            DOM.darkness.style.setProperty('--x', x + 'px');
-            DOM.darkness.style.setProperty('--y', y + 'px');
-            DOM.beam.style.setProperty('--x', x + 'px');
-            DOM.beam.style.setProperty('--y', y + 'px');
-        });
 
         // --- LOGIN ---
-        DOM.pass.addEventListener('keyup', () => {
-            beep(600, 0.05); // Keypress sound
-            if (DOM.pass.value === SECRET) {
-                DOM.gate.style.opacity = 0;
-                setTimeout(() => { 
-                    DOM.gate.style.display = 'none'; 
-                    STATE.active = true;
-                    startMechanics();
-                }, 1000);
+        pass.addEventListener('keyup', () => {
+            beep(800, 'square');
+            if(pass.value === CODE) {
+                beep(1200, 'sine', 0.2);
+                login.style.display = 'none';
+                main.style.display = 'block';
+                startSystem();
             }
         });
 
-        // --- THE MECHANICS LOOP ---
-        function startMechanics() {
+        // --- THE SYSTEM LOOP ---
+        function startSystem() {
+            cvs.width = 300; cvs.height = 150;
             
-            // 1. Geiger Counter Loop (Audio + LED)
-            let tickRate = 2000;
-            
-            function tick() {
-                if (!STATE.active) return;
+            // 1. Radar Drawing Loop
+            let offset = 0;
+            function drawRadar() {
+                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                ctx.fillRect(0,0,300,150);
                 
-                // Calculate speed based on threat
-                tickRate = Math.max(100, 2000 - (STATE.threat * 20));
+                ctx.beginPath();
+                ctx.strokeStyle = instability > 5 ? '#ff3333' : '#00ffff';
+                ctx.lineWidth = 2;
                 
-                // Visual Flash
-                DOM.led.classList.add('led-active');
-                setTimeout(() => DOM.led.classList.remove('led-active'), 50);
-                
-                // Audio Click
-                beep(800, 0.02);
-
-                setTimeout(tick, tickRate);
+                for(let i=0; i<300; i++) {
+                    const amp = (instability * 5) + 2;
+                    const freq = 0.05 + (threat/500);
+                    const y = 75 + Math.sin((i + offset) * freq) * amp * Math.random();
+                    ctx.lineTo(i, y);
+                }
+                ctx.stroke();
+                offset += 5 + instability;
+                requestAnimationFrame(drawRadar);
             }
-            tick();
+            drawRadar();
 
-            // 2. Threat Increase Loop
+            // 2. Gameplay Loop
             setInterval(() => {
-                if (!STATE.active) return;
-
                 // Threat rises naturally
-                STATE.threat += Math.random() * 3;
-
-                // Ink Spawning (Visual Horror)
-                if (STATE.threat > 30 && Math.random() > 0.7) spawnInk();
-
-                // Shaking (Physical Horror)
-                if (STATE.threat > 70) {
-                    DOM.desk.classList.add('shaking');
-                    rumble(); // Deep bass sound
-                } else {
-                    DOM.desk.classList.remove('shaking');
-                }
-
-                // Game Over
-                if (STATE.threat >= 100) {
-                    STATE.active = false;
-                    DOM.darkness.style.background = "#000";
-                    DOM.beam.style.opacity = 0;
-                    setTimeout(() => location.reload(), 2000);
-                }
+                threat += 0.5;
+                proxTxt.innerText = Math.floor(threat) + "%";
                 
-                // Shadow Hand Manifestation
-                if (STATE.threat > 50 && Math.random() > 0.9) {
-                    DOM.shadow.style.opacity = 1;
-                    setTimeout(() => DOM.shadow.style.opacity = 0, 2000);
+                // Instability Spikes
+                if(Math.random() > 0.95) {
+                    instability = 10;
+                    logTxt.innerText = "> WARNING: SEISMIC SPIKE DETECTED";
+                    logTxt.style.color = "red";
+                    btn.style.display = "inline-block";
+                    corruptText();
+                    hum();
                 }
 
-            }, 1000);
-        }
+                // Instability Decay
+                if(instability > 0) instability -= 0.1;
+                
+                // Normal status
+                if(instability < 2) {
+                    logTxt.innerText = "> SYSTEM_READY...";
+                    logTxt.style.color = "#00ffff";
+                    btn.style.display = "none";
+                }
 
-        // --- STABILIZE MECHANIC (Click the Box) ---
-        DOM.device.addEventListener('mousedown', () => {
-            if (!STATE.active) return;
-            
-            // Mechanic: Rapid clicking lowers threat
-            STATE.threat -= 15;
-            if (STATE.threat < 0) STATE.threat = 0;
-            
-            beep(1200, 0.1); // High pitch confirm sound
-            
-            // Animation reset
-            DOM.device.style.transform = "rotate(-2deg) scale(0.95)";
-            setTimeout(() => DOM.device.style.transform = "rotate(-2deg) scale(1.0)", 100);
-        });
+                // CRASH STATE
+                if(threat >= 100) {
+                    document.body.innerHTML = "";
+                    document.body.style.background = "red";
+                    setTimeout(() => location.reload(), 1000);
+                }
 
-        // --- DRAGGABLE PHOTOS ---
-        const photo = document.getElementById('skull-photo');
-        let isDrag = false;
-        photo.addEventListener('mousedown', () => { isDrag = true; photo.style.zIndex=100; });
-        document.addEventListener('mouseup', () => { isDrag = false; photo.style.zIndex=50; });
-        document.addEventListener('mousemove', (e) => {
-            if (isDrag) {
-                photo.style.left = (e.clientX - 100) + 'px';
-                photo.style.top = (e.clientY - 100) + 'px';
-            }
-        });
-
-        // --- INK SPAWNER ---
-        function spawnInk() {
-            const ink = document.createElement('div');
-            ink.className = 'ink-stain';
-            const size = Math.random() * 40 + 10;
-            ink.style.width = size + 'px';
-            ink.style.height = size + 'px';
-            
-            // Random pos inside document
-            const rect = DOM.doc.getBoundingClientRect();
-            ink.style.left = (Math.random() * rect.width) + 'px';
-            ink.style.top = (Math.random() * rect.height) + 'px';
-            
-            DOM.doc.appendChild(ink);
-            
-            // "Grow" effect
-            setTimeout(() => {
-                ink.style.transform = "scale(3)";
             }, 100);
         }
+
+        // --- MECHANIC: TEXT CORRUPTION ---
+        function corruptText() {
+            const paragraphs = ['p1', 'p2', 'p3', 'p4'];
+            const id = paragraphs[Math.floor(Math.random() * paragraphs.length)];
+            const el = document.getElementById(id);
+            
+            // Glitch text effect
+            const originalText = el.innerText;
+            const glitchChars = "█▓▒░#@!01";
+            let glitched = "";
+            for(let i=0; i<originalText.length; i++) {
+                if(Math.random() > 0.5) glitched += glitchChars[Math.floor(Math.random()*glitchChars.length)];
+                else glitched += originalText[i];
+            }
+            el.innerText = glitched;
+            el.classList.add('corrupted-text');
+            
+            // Restore text after 2 seconds
+            setTimeout(() => {
+                el.innerText = originalText; // Simplified restore (in real game, store original)
+                el.classList.remove('corrupted-text');
+            }, 500);
+        }
+
+        // --- MECHANIC: STABILIZE ---
+        btn.addEventListener('click', () => {
+            threat -= 10;
+            instability = 0;
+            if(threat < 0) threat = 0;
+            beep(200, 'square', 0.2);
+            logTxt.innerText = "> SIGNAL STABILIZED.";
+        });
 
     </script>
 </body>
