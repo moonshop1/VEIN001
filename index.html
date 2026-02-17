@@ -2,261 +2,228 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>V.E.I.N. | ABYSS_OS_v9.0</title>
+    <title>V.E.I.N. | PHYSICAL_ARCHIVE_001</title>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
             --vein-cyan: #00ffff;
             --alert-red: #ff3333;
-            --void-gray: #1a1a1a;
-            --terminal-green: #00ff41;
+            --paper-color: #dcdcdc;
+            --ink-black: #1a1a1a;
         }
 
         body, html {
             margin: 0; padding: 0;
-            background-color: #050505;
+            background-color: #080808;
             color: var(--vein-cyan);
             font-family: 'VT323', monospace;
             height: 100vh; width: 100vw;
             overflow: hidden; cursor: crosshair;
         }
 
-        /* --- BACKGROUND VOID PARTICLES --- */
-        #canvas { position: fixed; top: 0; left: 0; z-index: -1; }
-
-        /* --- CRT OVERLAY --- */
+        /* --- CRT EFFECT --- */
         .crt::before {
             content: " "; display: block; position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
             z-index: 10000; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* --- DRAGGABLE WINDOWS --- */
-        .window {
-            position: absolute; background: rgba(10, 10, 10, 0.9);
-            border: 1px solid var(--vein-cyan);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        /* --- DRAGGABLE DOCUMENTS --- */
+        .document {
+            position: absolute; background: var(--paper-color);
+            color: var(--ink-black); width: 500px; padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             display: none; flex-direction: column;
-            min-width: 200px; z-index: 10;
+            border: 1px solid #999; transform: rotate(-1deg);
+            z-index: 10; font-family: 'Courier Prime', monospace;
+            cursor: grab;
         }
-        .window-header {
-            background: var(--vein-cyan); color: black;
-            padding: 5px 10px; font-weight: bold; cursor: move;
-            display: flex; justify-content: space-between;
+        .document:active { cursor: grabbing; }
+        .document-header {
+            border-bottom: 2px solid var(--ink-black);
+            margin-bottom: 15px; padding-bottom: 5px;
+            font-weight: bold; font-family: 'Special Elite', cursive;
         }
-        .window-content { padding: 15px; overflow-y: auto; max-height: 400px; }
 
-        /* --- THE HAND (SWIPE FX) --- */
-        #spectral-hand {
-            position: fixed; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            z-index: 9000; pointer-events: none; transition: 1s linear;
+        .stamp {
+            position: absolute; top: 20px; right: 20px;
+            border: 4px solid var(--alert-red); color: var(--alert-red);
+            padding: 5px 10px; font-family: 'Special Elite', cursive;
+            transform: rotate(15deg); font-weight: bold; font-size: 1.2rem;
+            opacity: 0.8; mix-blend-mode: multiply;
         }
-        .swipe-active { left: 100% !important; }
 
-        /* --- LOGIN SCREEN --- */
+        /* --- TERMINAL CONSOLE --- */
+        #console-container {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(0, 20, 20, 0.9); border-top: 2px solid var(--vein-cyan);
+            padding: 10px 20px; z-index: 5000; box-sizing: border-box;
+        }
+        #console-input {
+            background: transparent; border: none; color: var(--vein-cyan);
+            width: 90%; font-family: 'VT323'; font-size: 1.5rem; outline: none;
+        }
+
+        /* --- LOGIN OVERLAY --- */
         #login-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: black; z-index: 5000; display: flex;
+            background: #000; z-index: 9000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
         #pass-input {
             background: transparent; border: 1px solid var(--vein-cyan);
-            color: var(--vein-cyan); font-size: 2.5rem; text-align: center;
-            outline: none; font-family: inherit; margin-top: 20px;
+            color: var(--vein-cyan); font-size: 3rem; text-align: center;
+            outline: none; font-family: inherit; margin-top: 20px; width: 350px;
+            letter-spacing: 15px;
         }
 
-        /* --- VIDEO FEED --- */
-        .video-feed {
-            width: 300px; height: 180px; background: #000;
-            position: relative; overflow: hidden;
-            border: 1px solid #333;
+        /* --- VIDEO / GIF FEED --- */
+        .gif-window {
+            width: 320px; background: #000; border: 5px solid #333;
+            position: absolute; z-index: 15; display: none;
         }
-        .video-glitch {
-            width: 100%; height: 100%; background: url('https://media.giphy.com/media/oEI9uWU6L9pT2/giphy.gif');
-            background-size: cover; opacity: 0.3; mix-blend-mode: screen;
+        .gif-content { width: 100%; height: auto; opacity: 0.6; filter: grayscale(1) contrast(2); }
+
+        /* --- THE HAND EFFECT --- */
+        #hand-overlay {
+            position: fixed; top: 0; left: -100%; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.05); z-index: 8000; pointer-events: none;
+            transition: transform 0.8s ease-in;
         }
 
-        /* --- RADAR --- */
-        .radar {
-            width: 150px; height: 150px; border: 1px solid var(--vein-cyan);
-            border-radius: 50%; position: relative; margin: 0 auto;
-        }
-        .sweep {
-            position: absolute; top: 50%; left: 50%; width: 50%; height: 2px;
-            background: var(--vein-cyan); transform-origin: left;
-            animation: rotate 2s linear infinite;
-        }
-        @keyframes rotate { from {transform:rotate(0deg)} to {transform:rotate(360deg)} }
+        .redacted { background: #000; color: #000; cursor: help; }
+        .redacted:hover { background: transparent; }
 
-        /* --- SYNC BUTTON --- */
-        #sync-btn {
-            background: transparent; border: 1px solid var(--alert-red);
-            color: var(--alert-red); padding: 10px; cursor: pointer;
-            width: 100%; font-family: inherit; font-size: 1.2rem;
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); }
+            40% { transform: translate(-5px, -5px); }
+            60% { transform: translate(5px, 5px); }
+            80% { transform: translate(5px, -5px); }
+            100% { transform: translate(0); }
         }
-        #sync-btn:active { background: var(--alert-red); color: black; }
-
-        .redacted { background: black; color: black; transition: 0.3s; }
-        .redacted:hover { color: var(--alert-red); }
+        .glitch-active { animation: glitch 0.3s infinite; }
     </style>
 </head>
 <body class="crt">
 
-    <canvas id="canvas"></canvas>
-    <div id="spectral-hand"></div>
+    <div id="hand-overlay"></div>
 
     <div id="login-overlay">
-        <div style="font-size: 1.5rem;">[ V.E.I.N. AUTHORITY GATEWAY ]</div>
-        <input type="password" id="pass-input" maxlength="6" autofocus placeholder="ACCESS_CODE">
-        <div style="margin-top: 10px; opacity: 0.4;">ERROR: SECURITY BREACH IN SECTOR 1C</div>
+        <div style="font-size: 1.2rem; opacity: 0.6;">V.E.I.N. AUTHORITY // ENCRYPTED DOSSIER ACCESS</div>
+        <input type="password" id="pass-input" maxlength="6" autofocus placeholder="000000">
+        <div id="login-msg" style="margin-top: 15px;">AWAITING SECURITY HASH...</div>
     </div>
 
-    <div class="window" id="win-lore" style="top: 100px; left: 100px; width: 450px;">
-        <div class="window-header"><span>FILE: ENTITY_001.dat</span><span>[X]</span></div>
-        <div class="window-content">
-            <h2 style="font-family: 'Special Elite';">CLASSIFIED: HAZARD-001</h2>
-            <p><strong>Status:</strong> Active Manifestation</p>
-            <p><strong>Notes:</strong> Entity 001 represents the Abyss's primary "Correction Protocol." It does not pursue; it <strong>erases</strong>. Any matter it touches is purged from the current synchronization.</p>
-            <p><strong>The Hand:</strong> Observations confirm 001 manifests as a gargantuan spectral appendage. It has been sighted deleting up to <span class="redacted">1,000 Studs</span> of path in a single swipe.</p>
-            <hr>
-            <p style="font-style: italic;">"If you see the white fog... you're already deleted."</p>
-        </div>
+    <div class="document" id="doc-hazard" style="top: 100px; left: 150px;">
+        <div class="stamp">OBSERVED</div>
+        <div class="document-header">INCIDENT_REPORT // ENTITY_001</div>
+        <p><strong>CASE ID:</strong> VEIN-CV-3161400187</p>
+        <p><strong>SUBJECT:</strong> The Primordial Void Manifestation ("The Hand")</p>
+        <hr>
+        <p>Observations at <span class="redacted">250,000 Studs</span> confirm Entity 001 is a sentient defense mechanism. It does not chase; it <strong>erases</strong> the spatial geometry of the Inter-Zone.</p>
+        <p><strong>The "Stallion" Protocol:</strong> In the event of path erasure, Couriers must maintain <span class="redacted">Critical Velocity</span>. Stopping is a death sentence.</p>
     </div>
 
-    <div class="window" id="win-radar" style="top: 50px; right: 50px;">
-        <div class="window-header"><span>ABYSS_SCANNER</span><span>[X]</span></div>
-        <div class="window-content">
-            <div class="radar"><div class="sweep"></div></div>
-            <p style="text-align: center; margin-top: 10px;">PROXIMITY: <span id="prox-val">SAFE</span></p>
-        </div>
+    <div class="document" id="doc-nil" style="top: 250px; left: 400px; transform: rotate(2deg);">
+        <div class="document-header">RESEARCH_NOTE // SUBJECT_NIL</div>
+        <p>Telemetry suggests 001 is the entity responsible for the <span class="redacted">Sync-Core Inversion</span> of Courier NIL. Contact with the "Hand" caused a localized reality collapse.</p>
+        <p>NIL now exists as a "Kinetic Echo," eternally chased by the very force that broke him.</p>
     </div>
 
-    <div class="window" id="win-video" style="bottom: 50px; left: 50px;">
-        <div class="window-header"><span>CAM_FEED_01C</span><span>[X]</span></div>
-        <div class="window-content">
-            <div class="video-feed">
-                <div class="video-glitch"></div>
-                <div style="position:absolute; top:5px; left:5px; font-size:0.8rem; color:red;">● LIVE</div>
-            </div>
-        </div>
+    <div class="gif-window" id="win-evidence" style="top: 50px; right: 100px;">
+        <div style="background:#333; color:white; padding:5px; font-size:0.8rem;">SEC_FEED_01C // CAPTURED_VOID</div>
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemxvdTFtZ3lxNHhkdmZ3aG5obTFhaWMxYXQ0NTVtMm5lanVkdWRucSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/U4YclfvWJsZa4qEy9p/giphy.gif" class="gif-content">
     </div>
 
-    <div class="window" id="win-control" style="bottom: 50px; right: 50px; width: 250px;">
-        <div class="window-header"><span>SYSTEM_SYNC</span><span>[X]</span></div>
-        <div class="window-content">
-            <p>VOID PRESSURE: <span id="void-val">0%</span></p>
-            <div style="background: #333; height: 10px; margin-bottom: 10px;">
-                <div id="void-bar" style="background: var(--alert-red); height: 100%; width: 0%;"></div>
-            </div>
-            <button id="sync-btn">MANUAL_SYNC_OVERRIDE</button>
-        </div>
+    <div id="console-container">
+        <span>V.E.I.N._CONSOLE > </span>
+        <input type="text" id="console-input" placeholder="Type /SCAN, /DECRYPT, or /HELP..." autocomplete="off">
     </div>
 
     <script>
-        const input = document.getElementById('pass-input');
-        const overlay = document.getElementById('login-overlay');
-        const windows = document.querySelectorAll('.window');
+        const passInput = document.getElementById('pass-input');
+        const loginOverlay = document.getElementById('login-overlay');
+        const consoleInput = document.getElementById('console-input');
+        const documents = document.querySelectorAll('.document, .gif-window');
         const SECRET = "001001";
 
-        // --- AUDIO ENGINE ---
+        // --- AUDIO ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function sfx(f, d, t='sine', g=0.1) {
-            const o = audioCtx.createOscillator();
+        function playSfx(freq, dur, type='sine') {
+            const osc = audioCtx.createOscillator();
             const gn = audioCtx.createGain();
-            o.type = t; o.frequency.value = f;
-            gn.gain.setValueAtTime(g, audioCtx.currentTime);
-            gn.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d);
-            o.connect(gn); gn.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + d);
+            osc.type = type; osc.frequency.value = freq;
+            gn.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gn.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+            osc.connect(gn); gn.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
         }
 
         // --- LOGIN ---
-        input.addEventListener('keyup', (e) => {
-            sfx(400, 0.1, 'square', 0.05);
-            if (input.value === SECRET) {
-                sfx(800, 0.5, 'sine');
-                overlay.style.display = 'none';
-                windows.forEach(w => w.style.display = 'flex');
-                initTerminal();
-            } else if (input.value.length === 6) {
-                sfx(100, 0.5, 'sawtooth');
-                input.value = "";
+        passInput.addEventListener('keyup', (e) => {
+            playSfx(440, 0.1, 'square');
+            if (passInput.value === SECRET) {
+                playSfx(880, 0.5);
+                loginOverlay.style.display = 'none';
+                documents.forEach(d => d.style.display = 'flex');
+                initAbyssOS();
+            } else if (passInput.value.length === 6) {
+                playSfx(150, 0.5, 'sawtooth');
+                passInput.value = "";
             }
         });
 
-        // --- DRAGGABLE LOGIC ---
-        windows.forEach(win => {
-            const header = win.querySelector('.window-header');
-            let isDragging = false, offset = [0,0];
-            header.onmousedown = (e) => {
-                isDragging = true;
-                offset = [win.offsetLeft - e.clientX, win.offsetTop - e.clientY];
-            };
-            document.onmousemove = (e) => {
-                if (isDragging) {
-                    win.style.left = (e.clientX + offset[0]) + 'px';
-                    win.style.top = (e.clientY + offset[1]) + 'px';
-                }
-            };
-            document.onmouseup = () => isDragging = false;
+        // --- DRAGGABLE ---
+        documents.forEach(doc => {
+            let isDown = false, offset = [0,0];
+            doc.addEventListener('mousedown', (e) => {
+                isDown = true;
+                doc.style.zIndex = 100;
+                offset = [doc.offsetLeft - e.clientX, doc.offsetTop - e.clientY];
+            });
+            document.addEventListener('mousemove', (e) => {
+                if(!isDown) return;
+                doc.style.left = (e.clientX + offset[0]) + 'px';
+                doc.style.top = (e.clientY + offset[1]) + 'px';
+            });
+            document.addEventListener('mouseup', () => isDown = false);
         });
 
-        // --- GIMMICKS ---
-        function initTerminal() {
-            // 1. VOID PRESSURE SYSTEM
-            let voidPressure = 0;
-            setInterval(() => {
-                voidPressure += 2;
-                document.getElementById('void-val').innerText = voidPressure + "%";
-                document.getElementById('void-bar').style.width = voidPressure + "%";
-                if (voidPressure > 80) sfx(200, 0.2, 'sawtooth', 0.02);
-                if (voidPressure >= 100) {
-                    document.body.style.filter = "invert(1)";
-                    setTimeout(() => location.reload(), 1000);
+        // --- CONSOLE COMMANDS ---
+        consoleInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+                const cmd = consoleInput.value.toLowerCase();
+                playSfx(600, 0.05, 'square');
+                
+                if (cmd === '/scan') {
+                    alert("SCANNING... [ENTITY 001 DETECTED IN SECTOR D]");
+                } else if (cmd === '/decrypt') {
+                    document.querySelectorAll('.redacted').forEach(r => r.style.background = 'transparent');
+                } else if (cmd === '/help') {
+                    alert("COMMANDS: /SCAN, /DECRYPT, /RECOVER, /CLEAR");
                 }
-            }, 1000);
+                consoleInput.value = "";
+            }
+        });
 
-            document.getElementById('sync-btn').onclick = () => {
-                voidPressure = Math.max(0, voidPressure - 30);
-                sfx(1000, 0.3, 'sine');
-                document.body.style.animation = "shake 0.2s";
-            };
-
-            // 2. THE HAND SWIPE
+        // --- THE ABYSS GIMMICKS ---
+        function initAbyssOS() {
+            // THE HAND SWIPE
             setInterval(() => {
-                const hand = document.getElementById('spectral-hand');
-                hand.classList.add('swipe-active');
-                sfx(50, 2, 'sawtooth', 0.3); // Low rumble
-                document.body.style.transform = "scale(1.05)";
+                const hand = document.getElementById('hand-overlay');
+                hand.style.transform = "translateX(200%)";
+                playSfx(50, 2, 'sawtooth');
+                
+                documents.forEach(d => d.classList.add('glitch-active'));
                 setTimeout(() => {
-                    hand.classList.remove('swipe-active');
-                    document.body.style.transform = "scale(1)";
+                    hand.style.transform = "translateX(-100%)";
+                    documents.forEach(d => d.classList.remove('glitch-active'));
                 }, 1000);
-            }, 25000);
+            }, 30000);
         }
-
-        // --- VOID CANVAS ---
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        let particles = Array.from({length: 50}, () => ({
-            x: Math.random()*canvas.width, y: Math.random()*canvas.height, 
-            s: Math.random()*2, vx: Math.random()-0.5
-        }));
-        function draw() {
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
-            particles.forEach(p => {
-                p.y -= p.s; if (p.y < 0) p.y = canvas.height;
-                ctx.fillRect(p.x, p.y, p.s, p.s);
-            });
-            requestAnimationFrame(draw);
-        }
-        draw();
     </script>
 </body>
 </html>
