@@ -2,278 +2,431 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>V.E.I.N. | CASEFILE_001_FINAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
+    <title>V.E.I.N. | ARCHIVE_001_REDUX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #050505;
-            --paper-color: #e3e0d5;
-            --ink-color: #1a1a1a;
-            --alert-red: #8b0000;
-            --vein-cyan: #008b8b;
+            --void-black: #050505;
+            --paper: #d8d3c5;
+            --ink: #1a1a1a;
+            --hud-cyan: rgba(0, 255, 255, 0.8);
+            --hud-red: rgba(255, 50, 50, 0.9);
+            --scan-line: rgba(0, 255, 255, 0.1);
         }
 
         body, html {
             margin: 0; padding: 0;
-            background-color: var(--bg-color);
-            color: var(--ink-color);
+            background-color: var(--void-black);
             height: 100vh; width: 100vw;
-            overflow: hidden; cursor: none; /* Hide cursor for flashlight */
+            overflow: hidden; cursor: none; /* Hidden for custom flashlight cursor */
             font-family: 'Courier Prime', monospace;
+            user-select: none;
         }
 
-        /* --- FLASHLIGHT EFFECT --- */
-        #flashlight {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle 300px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.98) 100%);
-            z-index: 9000; pointer-events: none;
-        }
-        
-        /* --- THE DESK SURFACE --- */
-        #desk {
-            width: 100%; height: 100%;
+        /* --- LAYER 1: THE DESK (Physical Space) --- */
+        #desk-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
             background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
-            background-color: #111;
-            position: relative;
+            z-index: 1; transform-style: preserve-3d; perspective: 1000px;
         }
 
-        /* --- DRAGGABLE ITEMS COMMON --- */
-        .draggable {
-            position: absolute; box-shadow: 10px 20px 50px rgba(0,0,0,0.8);
-            cursor: grab; transition: transform 0.1s;
-        }
-        .draggable:active { cursor: grabbing; transform: scale(1.02); }
-
-        /* --- MAIN DOSSIER --- */
-        #casefile {
-            width: 700px; height: 850px;
-            background: var(--paper-color);
-            padding: 60px 80px;
-            top: 5%; left: 30%;
-            transform: rotate(-1deg);
-            background-image: url('https://www.transparenttextures.com/patterns/paper.png');
-            overflow: hidden; /* Hide overflow for ink effect */
+        /* --- PHYSICAL ITEMS --- */
+        .physical-doc {
+            position: absolute; background: var(--paper); color: var(--ink);
+            box-shadow: 10px 20px 60px rgba(0,0,0,0.8);
+            padding: 40px; width: 600px; height: 800px;
+            top: 10%; left: 30%; transform: rotate(-2deg);
+            transition: transform 0.1s; cursor: none;
         }
 
-        /* --- TEXT STYLING --- */
-        h1 { font-family: 'Special Elite', cursive; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; font-size: 2.5rem; }
-        h3 { background: #000; color: #fff; padding: 5px 10px; display: inline-block; margin-top: 30px; font-size: 1rem; letter-spacing: 2px; }
-        p { line-height: 1.6; font-size: 1.1rem; margin-bottom: 15px; text-align: justify; }
-        
-        .redacted { background: #000; color: #000; transition: 0.5s; cursor: help; }
-        .redacted:hover { background: transparent; color: var(--alert-red); }
+        .evidence-card {
+            position: absolute; background: #fff; padding: 10px;
+            box-shadow: 5px 10px 30px rgba(0,0,0,0.6);
+            transform: rotate(5deg); width: 200px;
+            top: 20%; left: 15%; z-index: 5;
+        }
 
+        .polaroid {
+            position: absolute; background: #fff; padding: 10px 10px 40px 10px;
+            width: 240px; transform: rotate(-8deg);
+            top: 50%; left: 70%; z-index: 6; box-shadow: 5px 10px 30px rgba(0,0,0,0.7);
+        }
+        .polaroid img { width: 100%; filter: contrast(1.2) sepia(0.2); }
+
+        /* --- TEXT STYLES --- */
+        h1 { font-family: 'Special Elite', cursive; font-size: 2.2rem; border-bottom: 4px double #000; margin-bottom: 20px; }
         .stamp {
-            position: absolute; top: 40px; right: 40px;
-            border: 6px double var(--alert-red); color: var(--alert-red);
-            padding: 10px 20px; font-family: 'Special Elite', cursive;
-            font-size: 2rem; transform: rotate(15deg); opacity: 0.7;
-            mix-blend-mode: multiply; pointer-events: none;
+            position: absolute; top: 30px; right: 30px;
+            border: 5px solid #8b0000; color: #8b0000;
+            padding: 5px 15px; font-family: 'Special Elite';
+            font-size: 1.5rem; transform: rotate(20deg); opacity: 0.7; mix-blend-mode: multiply;
         }
+        .redacted { background: #000; color: #000; cursor: help; transition: 0.3s; }
+        .redacted:hover { background: transparent; color: red; }
 
-        /* --- EVIDENCE: ID CARD --- */
-        #id-card {
-            width: 200px; height: 320px;
-            background: #fdfdfd; border-radius: 8px;
-            top: 10%; left: 10%; transform: rotate(5deg);
-            padding: 15px; box-sizing: border-box;
-            border: 1px solid #ccc;
+        /* --- LAYER 2: THE VOID (Ink Corruption) --- */
+        #corruption-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
         }
-        .id-photo { width: 100%; height: 140px; background: #333; margin-bottom: 10px; filter: grayscale(1) contrast(1.2); overflow: hidden; }
-        .id-photo img { width: 100%; }
-
-        /* --- EVIDENCE: POLAROID (SKULL) --- */
-        #polaroid {
-            width: 220px; background: #fff; padding: 15px 15px 50px 15px;
-            top: 60%; left: 70%; transform: rotate(-8deg);
-        }
-        #polaroid img { width: 100%; filter: sepia(0.5) contrast(1.2); border: 1px solid #ddd; }
-        .hand-note { font-family: 'Special Elite'; font-size: 0.8rem; position: absolute; bottom: 15px; left: 20px; color: #333; }
-
-        /* --- HORROR: VOID INK --- */
         .ink-blot {
             position: absolute; background: #000; border-radius: 50%;
-            filter: blur(20px); opacity: 0.9; mix-blend-mode: multiply;
-            pointer-events: none; transition: width 5s, height 5s;
+            filter: blur(8px) contrast(20); opacity: 0.95; mix-blend-mode: multiply;
+            transition: all 1s;
+        }
+
+        /* --- LAYER 3: FLASHLIGHT (Lighting Engine) --- */
+        #light-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle 250px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.95) 100%);
+            z-index: 20; pointer-events: none;
+        }
+
+        /* --- LAYER 4: AUGMENTED REALITY HUD (The Gimmick) --- */
+        #hud-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; pointer-events: none; font-family: 'Share Tech Mono', monospace;
+            color: var(--hud-cyan); text-shadow: 0 0 5px var(--hud-cyan);
+        }
+
+        /* Radar Container */
+        #radar-container {
+            position: absolute; bottom: 30px; right: 30px;
+            width: 300px; height: 150px;
+            border: 2px solid var(--hud-cyan);
+            background: rgba(0, 20, 20, 0.8);
+            pointer-events: auto; /* Clickable */
+            overflow: hidden;
+        }
+        #radar-canvas { width: 100%; height: 100%; }
+        
+        /* Threat Level */
+        #threat-meter {
+            position: absolute; bottom: 190px; right: 30px;
+            font-size: 1.5rem; text-align: right;
+        }
+
+        /* Sync Button */
+        #sync-btn {
+            position: absolute; bottom: 10px; left: 10px;
+            background: transparent; border: 1px solid var(--hud-cyan);
+            color: var(--hud-cyan); padding: 5px 10px; font-family: inherit;
+            cursor: pointer; display: none; pointer-events: auto;
+        }
+        #sync-btn:hover { background: var(--hud-cyan); color: #000; }
+
+        /* Biometric Tag */
+        .ar-tag {
+            position: absolute; padding: 5px; border: 1px solid var(--hud-cyan);
+            font-size: 0.7rem; background: rgba(0,0,0,0.5); pointer-events: none;
+        }
+        .line-connect {
+            position: absolute; background: var(--hud-cyan); height: 1px; width: 50px;
+            transform-origin: left; pointer-events: none;
         }
 
         /* --- LOGIN SCREEN --- */
-        #login {
-            position: fixed; width: 100%; height: 100%; background: #000;
-            z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff;
+        #gate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        #p-input { background: transparent; border: none; border-bottom: 2px solid #fff; color: #fff; font-size: 3rem; text-align: center; outline: none; font-family: 'Courier Prime'; width: 300px; letter-spacing: 10px; }
-
-        /* --- HAND SHADOW --- */
-        #shadow-hand {
-            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(0,0,0,0.8) 0%, transparent 60%);
-            z-index: 9500; pointer-events: none; opacity: 0; transition: opacity 2s;
+        #p-input {
+            background: transparent; border: none; border-bottom: 2px solid var(--hud-cyan);
+            color: var(--hud-cyan); font-family: 'Share Tech Mono'; font-size: 3rem;
+            text-align: center; width: 400px; letter-spacing: 15px; outline: none;
         }
 
-        /* --- AUDIO LOG TEXT --- */
-        #audio-log {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            color: var(--vein-cyan); font-family: 'VT323'; font-size: 1.5rem;
-            text-shadow: 0 0 5px var(--vein-cyan); display: none; z-index: 9999;
-        }
+        /* --- ANIMATIONS --- */
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+        .shaking { animation: shake 0.5s infinite; }
+        .critical { border-color: var(--hud-red) !important; color: var(--hud-red) !important; text-shadow: 0 0 5px var(--hud-red) !important; }
     </style>
 </head>
 <body>
 
-    <div id="login">
-        <h2 style="font-family: 'Special Elite'; letter-spacing: 3px;">V.E.I.N. ARCHIVES // RESTRICTED</h2>
-        <input type="password" id="p-input" maxlength="6" autofocus placeholder="______">
-        <p style="opacity: 0.5; margin-top: 20px; font-size: 0.8rem;">[ CODE: 001 - 001 ]</p>
+    <div id="gate">
+        <h1 style="color: white; font-family: 'Share Tech Mono'; border: none;">V.E.I.N. AUGMENTED ARCHIVE</h1>
+        <input type="password" id="p-input" maxlength="6" autofocus placeholder="000000">
+        <p style="color: var(--hud-cyan); margin-top: 20px; font-family: 'Share Tech Mono';">[ ACCESS: 001 - 001 ]</p>
     </div>
 
-    <div id="flashlight"></div>
-    <div id="shadow-hand"></div>
-    <div id="audio-log">> PLAYING: FLAME_LOG_FINAL.wav</div>
+    <div id="light-layer"></div>
 
-    <div id="desk">
+    <div id="hud-layer">
+        <div id="threat-meter">
+            ENTITY_PROXIMITY: <span id="prox-val">0%</span><br>
+            <span id="status-txt" style="font-size: 0.8rem;">STABLE</span>
+        </div>
         
-        <div id="id-card" class="draggable">
-            <div style="text-align:center; font-weight:bold; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:10px;">V.E.I.N. PERSONNEL</div>
-            <div class="id-photo"><img src="https://i.pinimg.com/736x/8f/1a/af/8f1aaf7f7632612a440ed33c8a9831d0.jpg"></div>
-            <strong>NAME:</strong> John Flame<br>
-            <strong>ROLE:</strong> Architect<br>
-            <strong>ID:</strong> 316140<br>
-            <div style="margin-top:20px; font-size:0.7rem; color:red; border:1px solid red; padding:2px; text-align:center;">ACCESS REVOKED</div>
+        <div id="radar-container">
+            <canvas id="radar-canvas"></canvas>
+            <button id="sync-btn">INITIATE_STABILIZATION</button>
+            <div style="position:absolute; top:5px; left:5px; font-size:0.6rem;">SEISMIC_SENSOR_01</div>
         </div>
 
-        <div id="polaroid" class="draggable">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmpmbXc0OWpya2JxOTE3MWtvNWphbDg5aWJic2k3MWNvM3VjZXN1biZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1Pq6EZxEQ7sbu/giphy.gif">
-            <div class="hand-note">Fig 1: The Face of 001</div>
         </div>
 
-        <div id="casefile" class="draggable">
-            <div class="stamp">CLASSIFIED</div>
-            
-            <h1>INCIDENT REPORT: 001</h1>
-            <p><strong>DATE:</strong> Feb 16, 2026<br><strong>LOCATION:</strong> Sector 1C (The Terminus)<br><strong>AUTHOR:</strong> J. Flame</p>
-            
-            <h3>I. THE ENTITY</h3>
-            <p>Entity 001 ("The Hand") is not biological. It is a <span class="redacted">Correction Protocol</span> embedded in the fabric of the Inter-Zone. It does not hunt; it deletes. When a Courier generates enough kinetic energy, 001 manifests to "clean" the corrupted data (the path).</p>
+    <div id="corruption-layer"></div>
 
-            <h3>II. THE NIL EVENT</h3>
-            <p>Subject NIL was the first to encounter 001. Upon reaching the end of the line, NIL's Sync-Core resonated with the entity's frequency. The result was not death, but **Inversion**. NIL became a permanent resident of the void, forced to run forever to prevent his own deletion.</p>
-
-            <h3>III. COUNTERMEASURES</h3>
-            <p>There is no weapon against 001. The only defense is <span class="redacted">VELOCITY</span>. If the path begins to dissolve, increase speed immediately.</p>
-            
-            <h3>IV. PERSONAL NOTE</h3>
-            <p>I can hear it. The humming. It knows I'm writing this. The ink is still wet but the paper feels... wrong. If you are reading this, **DO NOT LOOK AT THE SHADOWS**.</p>
-            
-            <div style="text-align:center; margin-top:50px; font-family:'Special Elite'; font-size:0.8rem; color:#555;">
-                -- END OF REPORT --<br>PROPERTY OF V.E.I.N. AUTHORITY
+    <div id="desk-layer">
+        
+        <div class="evidence-card" id="ev-id" style="top:15%; left:20%;">
+            <div style="text-align:center; font-weight:bold; border-bottom:2px solid #000;">V.E.I.N. ID</div>
+            <img src="https://i.pinimg.com/736x/8f/1a/af/8f1aaf7f7632612a440ed33c8a9831d0.jpg" style="width:100%; filter:grayscale(1);">
+            <div style="font-size:0.7rem; margin-top:5px;">
+                NAME: J. FLAME<br>
+                CLEARANCE: 5<br>
+                STATUS: <span style="color:red; font-weight:bold;">DELETED</span>
             </div>
+        </div>
 
-            <div id="ink-container"></div>
+        <div class="polaroid" id="ev-pic">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmpmbXc0OWpya2JxOTE3MWtvNWphbDg5aWJic2k3MWNvM3VjZXN1biZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1Pq6EZxEQ7sbu/giphy.gif">
+            <div style="font-family:'Special Elite'; font-size:0.8rem; margin-top:10px; color:#444;">Fig A: The Void Face</div>
+        </div>
+
+        <div class="physical-doc" id="doc-main">
+            <div class="stamp">CLASSIFIED</div>
+            <h1>INCIDENT: ENTITY 001</h1>
+            
+            <p><strong>REPORT ID:</strong> VEIN-001-HAND<br><strong>DATE:</strong> 2026-02-16<br><strong>SECTOR:</strong> The Abyss</p>
+
+            <h3 style="background:#000; color:#fff; display:inline-block; padding:2px 5px;">I. OVERVIEW</h3>
+            <p>Entity 001 is the <span class="redacted">Spatial Eraser</span>. Unlike other anomalies, it does not inhabit the facility. It inhabits the space <i>between</i> spaces. When a Courier reaches maximum velocity, the friction wears down reality, allowing 001 to enter.</p>
+
+            <h3 style="background:#000; color:#fff; display:inline-block; padding:2px 5px;">II. MECHANICS</h3>
+            <p>001 manifests as a massive hand composed of "White Void." It targets the path geometry. In the NIL incident, 001 erased 4,000 studs of track, forcing NIL into an infinite freefall.</p>
+
+            <h3 style="background:#000; color:#fff; display:inline-block; padding:2px 5px;">III. WARNING</h3>
+            <p>If you see the Radar spike, <strong>DO NOT MOVE</strong>. The entity tracks vibration. Wait for the Stabilization Protocol to reset the local reality anchor.</p>
+
+            <div style="margin-top:50px; font-size:0.8rem; border-top:1px solid #000; padding-top:10px;">
+                <i>"It's not haunting us. It's formatting us."</i> - J. Flame
+            </div>
         </div>
 
     </div>
 
     <script>
-        const pInput = document.getElementById('p-input');
-        const login = document.getElementById('login');
-        const flash = document.getElementById('flashlight');
-        const audioLog = document.getElementById('audio-log');
-        const SECRET = "001001";
+        // --- CONFIGURATION & VARIABLES ---
+        const SECRET_CODE = "001001";
+        const STATE = {
+            proximity: 0,      // 0 to 100
+            shaking: false,    // Is the screen shaking?
+            stabilizing: false // Is the user fixing it?
+        };
 
-        // --- MOUSE FLASHLIGHT LOGIC ---
+        const DOM = {
+            gate: document.getElementById('gate'),
+            pInput: document.getElementById('p-input'),
+            light: document.getElementById('light-layer'),
+            desk: document.getElementById('desk-layer'),
+            radar: document.getElementById('radar-canvas'),
+            proxVal: document.getElementById('prox-val'),
+            statusTxt: document.getElementById('status-txt'),
+            syncBtn: document.getElementById('sync-btn'),
+            corruption: document.getElementById('corruption-layer'),
+            hud: document.getElementById('hud-layer'),
+            doc: document.getElementById('doc-main')
+        };
+
+        const CTX = DOM.radar.getContext('2d');
+        const AUDIO = new (window.AudioContext || window.webkitAudioContext)();
+
+        // --- AUDIO ENGINE (Synthesizer) ---
+        function sfx(freq, type='sine', dur=0.1, vol=0.1) {
+            const osc = AUDIO.createOscillator();
+            const gain = AUDIO.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, AUDIO.currentTime);
+            gain.gain.setValueAtTime(vol, AUDIO.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, AUDIO.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(AUDIO.destination);
+            osc.start();
+            osc.stop(AUDIO.currentTime + dur);
+        }
+
+        // --- 1. LOGIN SYSTEM ---
+        DOM.pInput.addEventListener('keyup', (e) => {
+            sfx(400, 'square', 0.05);
+            if (DOM.pInput.value === SECRET_CODE) {
+                sfx(100, 'sawtooth', 1.0, 0.5); // Success sound
+                DOM.gate.style.display = 'none';
+                startSimulation();
+            }
+        });
+
+        // --- 2. FLASHLIGHT LOGIC ---
         document.addEventListener('mousemove', (e) => {
-            flash.style.setProperty('--x', e.clientX + 'px');
-            flash.style.setProperty('--y', e.clientY + 'px');
+            const x = e.clientX;
+            const y = e.clientY;
+            DOM.light.style.setProperty('--x', `${x}px`);
+            DOM.light.style.setProperty('--y', `${y}px`);
+            
+            // Parallax Effect for Desk
+            const moveX = (window.innerWidth / 2 - x) * 0.02;
+            const moveY = (window.innerHeight / 2 - y) * 0.02;
+            DOM.desk.style.transform = `rotateX(${moveY}deg) rotateY(${moveX}deg)`;
         });
 
-        // --- AUDIO ENGINE ---
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        function sfx(f, type) {
-            const o = ctx.createOscillator(); const g = ctx.createGain();
-            o.type = type; o.frequency.value = f; 
-            g.gain.setValueAtTime(0.1, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-            o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.5);
+        // --- 3. RADAR SYSTEM (Canvas Drawing) ---
+        let waveOffset = 0;
+        function drawRadar() {
+            CTX.fillStyle = 'rgba(0, 20, 20, 0.2)';
+            CTX.fillRect(0, 0, DOM.radar.width, DOM.radar.height);
+            
+            CTX.beginPath();
+            CTX.strokeStyle = STATE.shaking ? '#ff3232' : '#00ffff';
+            CTX.lineWidth = 2;
+
+            const amplitude = STATE.proximity * 0.5 + (STATE.shaking ? 20 : 2);
+            const frequency = STATE.shaking ? 0.5 : 0.1;
+            
+            for (let i = 0; i < DOM.radar.width; i++) {
+                const y = DOM.radar.height / 2 + 
+                          Math.sin((i + waveOffset) * frequency) * amplitude + 
+                          (Math.random() * (STATE.proximity / 5)); // Noise
+                CTX.lineTo(i, y);
+            }
+            CTX.stroke();
+            
+            waveOffset += STATE.shaking ? 20 : 5;
+            requestAnimationFrame(drawRadar);
         }
 
-        // --- LOGIN ---
-        pInput.addEventListener('keyup', () => {
-            sfx(200, 'square');
-            if (pInput.value === SECRET) {
-                sfx(100, 'sawtooth');
-                login.style.display = 'none';
-                startHorrorLoop();
-            }
+        // --- 4. GAMEPLAY LOOP (The "Mechanics") ---
+        function startSimulation() {
+            // Setup Canvas
+            DOM.radar.width = 300;
+            DOM.radar.height = 150;
+            drawRadar();
+            createARTags();
+
+            // The Threat Loop
+            setInterval(() => {
+                if (!STATE.stabilizing) {
+                    STATE.proximity += Math.random() * 2;
+                    
+                    // Update Text
+                    DOM.proxVal.innerText = Math.floor(STATE.proximity) + "%";
+                    
+                    // Mechanic: Audio Cues
+                    if (Math.random() > 0.9) sfx(50, 'sawtooth', 0.5, STATE.proximity/200);
+
+                    // Mechanic: Visual Corruption (Ink)
+                    if (STATE.proximity > 20 && Math.random() > 0.8) spawnInk();
+
+                    // Mechanic: Screen Shake (Threat Event)
+                    if (STATE.proximity > 70) {
+                        STATE.shaking = true;
+                        DOM.desk.classList.add('shaking');
+                        DOM.statusTxt.innerText = "CRITICAL INSTABILITY - SYNC REQUIRED";
+                        DOM.statusTxt.classList.add('critical');
+                        DOM.syncBtn.style.display = 'block';
+                        document.body.style.cursor = 'crosshair'; // Show cursor to click
+                    }
+
+                    // Game Over Condition
+                    if (STATE.proximity >= 100) {
+                        document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%; font-family:monospace;'>SIGNAL LOST // DATA ERASED</h1>";
+                        sfx(30, 'sawtooth', 3.0, 1.0);
+                        setTimeout(() => location.reload(), 3000);
+                    }
+                } else {
+                    // Cooling Down
+                    STATE.proximity -= 5;
+                    if (STATE.proximity < 0) STATE.proximity = 0;
+                    DOM.proxVal.innerText = Math.floor(STATE.proximity) + "%";
+                    
+                    if (STATE.proximity < 10) {
+                        STATE.stabilizing = false;
+                        STATE.shaking = false;
+                        DOM.desk.classList.remove('shaking');
+                        DOM.statusTxt.innerText = "STABLE";
+                        DOM.statusTxt.classList.remove('critical');
+                        DOM.syncBtn.style.display = 'none';
+                        document.body.style.cursor = 'none';
+                    }
+                }
+            }, 500);
+        }
+
+        // --- 5. INTERACTION MECHANICS ---
+
+        // Sync Button (Stabilize)
+        DOM.syncBtn.addEventListener('click', () => {
+            STATE.stabilizing = true;
+            sfx(800, 'sine', 0.5, 0.5);
         });
 
-        // --- DRAGGABLE SYSTEM ---
-        const items = document.querySelectorAll('.draggable');
-        items.forEach(item => {
+        // Spawn Ink Blots
+        function spawnInk() {
+            const blot = document.createElement('div');
+            blot.className = 'ink-blot';
+            const size = Math.random() * 50 + 20;
+            blot.style.width = size + 'px';
+            blot.style.height = size + 'px';
+            
+            // Random position on the document
+            const rect = DOM.doc.getBoundingClientRect();
+            const x = rect.left + Math.random() * rect.width;
+            const y = rect.top + Math.random() * rect.height;
+            
+            blot.style.left = x + 'px';
+            blot.style.top = y + 'px';
+            
+            DOM.corruption.appendChild(blot);
+            sfx(200, 'square', 0.05, 0.1); // Squish sound
+        }
+
+        // AR Tags (The Visual Gimmick)
+        function createARTags() {
+            const items = [
+                { id: 'ev-id', text: 'BIO_SIG: FLAME' },
+                { id: 'ev-pic', text: 'ANOMALY_DETECTED' },
+                { id: 'doc-main', text: 'CASE_FILE_001' }
+            ];
+
+            items.forEach(item => {
+                const el = document.getElementById(item.id);
+                const tag = document.createElement('div');
+                tag.className = 'ar-tag';
+                tag.innerText = item.text;
+                DOM.hud.appendChild(tag);
+
+                // Update Tag Position Loop
+                setInterval(() => {
+                    const rect = el.getBoundingClientRect();
+                    tag.style.left = (rect.right + 10) + 'px';
+                    tag.style.top = rect.top + 'px';
+                }, 50);
+            });
+        }
+
+        // Draggable Logic (For Evidence)
+        const draggables = document.querySelectorAll('.physical-doc, .evidence-card, .polaroid');
+        draggables.forEach(elm => {
             let isDown = false, offset = [0,0];
-            item.addEventListener('mousedown', (e) => {
+            elm.addEventListener('mousedown', (e) => {
                 isDown = true;
-                item.style.zIndex = 1000;
-                offset = [item.offsetLeft - e.clientX, item.offsetTop - e.clientY];
-                sfx(50, 'sine'); // Paper rustle sound trigger
+                elm.style.zIndex = 1000;
+                offset = [elm.offsetLeft - e.clientX, elm.offsetTop - e.clientY];
             });
-            document.addEventListener('mouseup', () => { isDown = false; item.style.zIndex = 10; });
+            document.addEventListener('mouseup', () => { isDown = false; elm.style.zIndex = ''; });
             document.addEventListener('mousemove', (e) => {
-                if (isDown) {
-                    item.style.left = (e.clientX + offset[0]) + 'px';
-                    item.style.top = (e.clientY + offset[1]) + 'px';
+                if(isDown) {
+                    elm.style.left = (e.clientX + offset[0]) + 'px';
+                    elm.style.top = (e.clientY + offset[1]) + 'px';
+                    
+                    // Re-calculate AR lines
+                    sfx(50, 'sine', 0.02, 0.05); // Drag sound
                 }
             });
         });
 
-        // --- HORROR LOOP ---
-        function startHorrorLoop() {
-            let intensity = 0;
-            const doc = document.getElementById('casefile');
-
-            // 1. Ambience (Simulated)
-            setInterval(() => {
-                if(Math.random() > 0.9) sfx(40, 'sawtooth'); // Distant boom
-            }, 3000);
-
-            // 2. Ink Spreading
-            setInterval(() => {
-                intensity++;
-                if (intensity > 5 && Math.random() > 0.6) {
-                    const blot = document.createElement('div');
-                    blot.className = 'ink-blot';
-                    blot.style.width = (Math.random() * 50 + 20) + 'px';
-                    blot.style.height = blot.style.width;
-                    blot.style.top = (Math.random() * 800) + 'px';
-                    blot.style.left = (Math.random() * 600) + 'px';
-                    doc.appendChild(blot);
-                }
-
-                // 3. The Shadow Hand
-                if (intensity > 20 && Math.random() > 0.8) {
-                    const shadow = document.getElementById('shadow-hand');
-                    shadow.style.opacity = 1;
-                    sfx(30, 'sawtooth'); // Deep rumble
-                    setTimeout(() => shadow.style.opacity = 0, 3000);
-                }
-
-                // 4. Audio Log Trigger
-                if (intensity === 15) {
-                    audioLog.style.display = 'block';
-                    typeWriter("I... I tried to warn them. The Core isn't stable. NIL is still in there...", 0);
-                }
-
-            }, 2000);
-        }
-
-        function typeWriter(text, i) {
-            if (i < text.length) {
-                audioLog.innerHTML += text.charAt(i);
-                setTimeout(() => typeWriter(text, i + 1), 100);
-            } else {
-                setTimeout(() => audioLog.style.display = 'none', 3000);
-            }
-        }
     </script>
 </body>
 </html>
