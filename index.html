@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>V.E.I.N. | ABYSS MONITORING STATION 001</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glow-white: #ffffff;
+            --void-black: #020202;
+            --alert-red: #ff0000;
+            --vein-cyan: #00ffff;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--void-black);
+            color: var(--glow-white);
+            font-family: 'VT323', monospace;
+            height: 100vh; overflow: hidden;
+        }
+
+        /* --- CRT EFFECT --- */
+        .crt::after {
+            content: " "; display: block; position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            z-index: 1000; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        /* --- RADAR / SENSOR --- */
+        #radar-container {
+            position: fixed; top: 20px; right: 20px;
+            width: 150px; height: 150px; border: 2px solid var(--vein-cyan);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 15px var(--vein-cyan);
+        }
+        .radar-sweep {
+            position: absolute; width: 50%; height: 2px;
+            background: var(--vein-cyan); transform-origin: left;
+            animation: sweep 2s linear infinite;
+        }
+        @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- SCREENS --- */
+        .screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .active { display: flex; }
+
+        /* --- LOGIN --- */
+        #passcode-input {
+            background: transparent; border: none; border-bottom: 2px solid white;
+            color: white; font-family: inherit; font-size: 3rem;
+            text-align: center; width: 300px; outline: none; letter-spacing: 15px;
+        }
+
+        /* --- CONTENT --- */
+        #archive-content { overflow-y: auto; padding: 50px 0; }
+        .document {
+            background: #f0f0f0; color: #1a1a1a; width: 850px;
+            padding: 80px; position: relative; font-family: 'Courier Prime', monospace;
+            box-shadow: 0 0 100px rgba(255,255,255,0.1); border: 1px solid #ccc;
+        }
+
+        .deletion-effect { animation: erase 1s forwards; pointer-events: none; }
+        @keyframes erase { to { opacity: 0; transform: scale(0.9); filter: blur(10px); } }
+
+        .threat-level {
+            position: fixed; top: 20px; left: 20px; font-size: 2rem;
+            color: var(--alert-red); text-shadow: 0 0 10px var(--alert-red);
+        }
+
+        .stamp {
+            position: absolute; top: 40px; right: 50px; border: 6px double var(--alert-red);
+            color: var(--alert-red); padding: 10px 20px; font-family: 'Special Elite', cursive;
+            transform: rotate(-15deg); font-size: 2rem; font-weight: bold;
+        }
+    </style>
+</head>
+<body class="crt">
+
+    <div id="radar-container">
+        <div class="radar-sweep"></div>
+        <div id="target-dot" style="width: 10px; height: 10px; background: red; border-radius: 50%; display:none;"></div>
+    </div>
+
+    <div class="threat-level">THREAT: <span id="threat-val">MINIMAL</span></div>
+
+    <div id="login-screen" class="screen active">
+        <div style="font-size: 1.5rem; margin-bottom: 20px;">[ AUTHENTICATING ABYSS LINK... ]</div>
+        <input type="password" id="passcode-input" maxlength="6" autofocus placeholder="______">
+        <div id="hint" style="margin-top: 20px; opacity: 0.5;">HINT: THE FIRST ENTITY. THE FIRST RUNNER.</div>
+    </div>
+
+    <div id="archive-content" class="screen">
+        <div class="document" id="doc">
+            <div class="stamp">OBSERVED</div>
+            <center>
+                <h1 style="font-family: 'Special Elite'; font-size: 2.5rem; margin: 0;">ENTITY 001</h1>
+                <p>V.E.I.N. CLASSIFIED DATA - LEVEL 5 CLEARANCE</p>
+            </center>
+            <hr>
+            <p><strong>SUBJECT:</strong> The Primordial Void Manifestation ("The Hand")</p>
+            <p><strong>DESIGNATION:</strong> HAZARD-001</p>
+            
+            <h3>I. OVERVIEW</h3>
+            <p id="p1">Entity 001 is a sentient defense mechanism of the Abyss. It does not exist as biological matter, but as a "Correction Protocol" in the fabric of reality. When high-velocity movement (Couriers) is detected, 001 manifests to purge the area of "Noise."</p>
+
+            <h3>II. ABILITIES: SPATIAL ERASURE</h3>
+            <p id="p2">Unlike Subject NIL, 001 does not target the Courier directly. It targets the <strong>Path</strong>. Using a massive spectral appendage, it physically removes chunks of geometry from the Inter-Zone. Once a path is deleted, it does not return. This is the primary cause of Courier "Fall-Off" fatalities.</p>
+
+            <h3>III. THE "NIL" CONNECTION</h3>
+            <p id="p3">Research suggests 001 is the entity that broke the First Runner. Telemetry shows that when NIL reached the terminus, 001 made physical contact with his Sync-Core. This inverted his existence, turning him from a man into a perpetual glitch.</p>
+
+            <h3>IV. COUNTERMEASURES</h3>
+            <p id="p4"><strong>DO NOT STOP.</strong> 001 follows the vibration of feet on the path. If you slow down, you are easier to locate. If the path is erased in front of you, maintain maximum velocity and jump. The Abyss cannot delete your momentum.</p>
+
+            <div style="background: black; color: white; padding: 20px; margin-top: 50px;">
+                <h4 style="margin: 0;">// WARNING: SENSOR SPIKE //</h4>
+                <p style="margin: 5px 0; font-size: 0.8rem;">Entity 001 has detected this terminal's uplink. Data erasure will commence shortly.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('passcode-input');
+        const login = document.getElementById('login-screen');
+        const content = document.getElementById('archive-content');
+        const threatVal = document.getElementById('threat-val');
+        const targetDot = document.getElementById('target-dot');
+        const sweep = document.querySelector('.radar-sweep');
+
+        const PASSCODE = "001001";
+
+        // AUDIO SYNTH
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, dur, type = 'sine') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + dur);
+        }
+
+        input.addEventListener('keyup', (e) => {
+            playTone(400, 0.1, 'square');
+            if (input.value === PASSCODE) {
+                playTone(800, 0.5);
+                login.classList.remove('active');
+                content.classList.add('active');
+                startDeletionProtocol();
+            } else if (input.value.length === 6) {
+                playTone(100, 0.3, 'sawtooth');
+                input.value = "";
+            }
+        });
+
+        function startDeletionProtocol() {
+            let levels = ["MINIMAL", "ELEVATED", "CRITICAL", "LOCALIZED ERASURE"];
+            let i = 0;
+            
+            // Threat Increase
+            setInterval(() => {
+                if (i < levels.length - 1) {
+                    i++;
+                    threatVal.innerText = levels[i];
+                    sweep.style.animationDuration = (2 - i * 0.5) + "s";
+                    if (i > 1) targetDot.style.display = "block";
+                }
+            }, 5000);
+
+            // Random Deletion
+            setInterval(() => {
+                const paragraphs = ["p1", "p2", "p3", "p4"];
+                const target = document.getElementById(paragraphs[Math.floor(Math.random() * paragraphs.length)]);
+                if (target && !target.classList.contains('deletion-effect')) {
+                    target.classList.add('deletion-effect');
+                    playTone(50, 0.5, 'sawtooth');
+                }
+            }, 8000);
+        }
+    </script>
+</body>
+</html>
