@@ -2,202 +2,199 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>V.E.I.N. | FORENSIC_DOSSIER_001</title>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
+    <title>V.E.I.N. | ABYSS_BREACH_DATA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Orbitron:wght@400;900&family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
-            --alert-red: #ff3333;
-            --vein-cyan: #00ffff;
-            --paper: #e0e0e0;
-            --ink: #1a1a1a;
+            --cyan: #00ffff; --red: #ff0000; --bg: #030303;
         }
 
         body, html {
-            margin: 0; padding: 0; background: #0a0a0a;
-            color: var(--vein-cyan); font-family: 'VT323', monospace;
-            height: 100vh; width: 100vw; overflow: hidden;
-            display: flex; justify-content: center; align-items: center;
+            margin: 0; padding: 0; background: var(--bg);
+            color: var(--cyan); font-family: 'VT323', monospace;
+            height: 100vh; overflow: hidden; cursor: crosshair;
         }
 
-        /* --- THE SCAN HUD --- */
-        #hud-overlay {
+        /* --- BACKGROUND CORRUPTION --- */
+        #corruption-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            border: 20px solid rgba(0, 255, 255, 0.05); pointer-events: none; z-index: 1000;
-        }
-        #scan-bar {
-            position: absolute; width: 100%; height: 4px; background: var(--alert-red);
-            box-shadow: 0 0 20px var(--alert-red); top: 0; animation: scan 4s linear infinite; z-index: 1001;
-        }
-        @keyframes scan { 0% {top: 0%;} 100% {top: 100%;} }
-
-        /* --- THE PHYSICAL DOCUMENT --- */
-        #dossier {
-            background: var(--paper); color: var(--ink);
-            width: 850px; height: 90vh; padding: 60px;
-            box-shadow: 0 0 100px rgba(0,0,0,1); position: relative;
-            font-family: 'Courier Prime', monospace; overflow-y: auto;
-            border: 1px solid #999; transform: rotate(-0.5deg);
-            display: none; transition: transform 0.1s;
+            background: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmpmbXc0OWpya2JxOTE3MWtvNWphbDg5aWJic2k3MWNvM3VjZXN1biZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1Pq6EZxEQ7sbu/giphy.gif');
+            background-size: cover; opacity: 0.05; z-index: -1; filter: grayscale(1) contrast(2);
         }
 
-        .stamp {
-            position: absolute; top: 40px; right: 60px; border: 5px solid var(--alert-red);
-            color: var(--alert-red); padding: 10px 20px; font-family: 'Special Elite', cursive;
-            transform: rotate(15deg); font-size: 2rem; opacity: 0.8; mix-blend-mode: multiply;
+        /* --- CRT / SCAN HUD --- */
+        .crt::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 10000; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* --- EMPLOYEE ID BADGE --- */
-        #id-badge {
-            position: absolute; top: -30px; left: 40px; width: 180px; height: 260px;
-            background: #fff; border: 1px solid #ccc; box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
-            padding: 10px; transform: rotate(-5deg); z-index: 50; color: #000;
+        /* --- THE DIGITAL DOSSIER --- */
+        #main-frame {
+            display: none; height: 100vh; grid-template-columns: 250px 1fr 250px;
+            border: 2px solid var(--cyan); box-sizing: border-box;
         }
-        .id-pic { width: 100%; height: 110px; background: #222; margin-bottom: 5px; overflow:hidden; }
-        .id-pic img { width: 100%; filter: grayscale(1) contrast(1.2); }
 
-        /* --- TAPED GIF PHOTO --- */
-        .evidence-photo {
-            float: right; width: 250px; border: 10px solid #fff;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3); margin: 20px;
-            transform: rotate(3deg); background: #000;
-        }
-        .evidence-photo img { width: 100%; opacity: 0.7; filter: sepia(0.5); }
+        .sidebar { border-right: 1px solid var(--cyan); padding: 20px; background: rgba(0,0,0,0.8); }
+        .sidebar-right { border-left: 1px solid var(--cyan); border-right: none; }
 
-        /* --- TERMINAL INPUT --- */
-        #cmd-line {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 850px; background: rgba(0,0,0,0.8); border: 1px solid var(--vein-cyan);
-            padding: 10px; z-index: 2000; display: none;
+        #document-scroll {
+            padding: 60px; overflow-y: auto; position: relative;
+            background: linear-gradient(to bottom, transparent, rgba(0,255,255,0.02));
         }
-        #t-input { background: transparent; border: none; color: var(--vein-cyan); width: 90%; font-family: 'VT323'; font-size: 1.5rem; outline: none; }
+
+        /* --- BIOMETRICS --- */
+        .bio-scan { border: 1px solid var(--cyan); padding: 10px; margin-bottom: 20px; }
+        .bio-pic { width: 100%; height: 120px; background: #222; overflow: hidden; position: relative; }
+        .bio-pic img { width: 100%; filter: cyan-filter; opacity: 0.6; }
+        .bio-pic::after { content: ""; position: absolute; top:0; left:0; width:100%; height:2px; background:var(--cyan); animation: scanline 2s infinite; }
+        @keyframes scanline { 0% {top:0} 100% {top:100%} }
 
         /* --- LOGIN --- */
-        #login {
+        #gate {
             position: fixed; width: 100%; height: 100%; background: #000;
-            z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        #p-input { background: transparent; border: 1px solid cyan; color: cyan; font-size: 3rem; text-align: center; outline: none; width: 350px; }
+        #p-in { background: transparent; border: 1px solid var(--cyan); color: var(--cyan); font-size: 3rem; text-align: center; outline: none; width: 400px; font-family: 'Orbitron'; }
 
         /* --- HORROR ELEMENTS --- */
-        .void-stain {
-            position: absolute; width: 300px; height: 300px; background: black;
-            border-radius: 50%; filter: blur(50px); opacity: 0; pointer-events: none;
+        #hand-wipe {
+            position: fixed; top: 0; left: -100%; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.2); z-index: 15000; pointer-events: none;
+            transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .redacted { background: #000; color: #000; cursor: help; }
-        .redacted:hover { background: transparent; }
+        .redacted { background: var(--cyan); color: var(--cyan); transition: 0.2s; cursor: help; }
+        .redacted:hover { background: transparent; color: #fff; text-shadow: 0 0 5px var(--cyan); }
+
+        /* --- PROGRESS BAR --- */
+        #breach-monitor { position: fixed; bottom: 0; width: 100%; height: 40px; background: #000; border-top: 2px solid var(--red); padding: 5px 20px; box-sizing: border-box; }
+        #breach-fill { height: 100%; width: 0%; background: var(--red); box-shadow: 0 0 20px var(--red); transition: 0.3s; }
+
+        .glitch { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% {transform: translate(1px, 1px)} 50% {transform: translate(-2px, -1px)} 100% {transform: translate(1px, 1px)} }
     </style>
 </head>
 <body class="crt">
 
-    <div id="hud-overlay"><div id="scan-bar"></div></div>
+    <div id="corruption-bg"></div>
+    <div id="hand-wipe"></div>
 
-    <div id="login">
-        <h1 style="letter-spacing: 5px;">V.E.I.N. ARCHIVE ACCESS</h1>
-        <input type="password" id="p-input" maxlength="6" autofocus placeholder="______">
-        <p style="margin-top: 20px; color: var(--alert-red); animation: pulse 1s infinite;">[ UNAUTHORIZED ACCESS IS A TERMINABLE OFFENSE ]</p>
+    <div id="gate">
+        <h1 style="font-family: 'Orbitron'; font-weight: 900;">V.E.I.N. CORE ACCESS</h1>
+        <input type="password" id="p-in" maxlength="6" autofocus placeholder="000000">
+        <p style="margin-top: 20px; opacity: 0.3;">SYSTEM HINT: ENTITY_001 + RUNNER_001</p>
     </div>
 
-    <div id="cmd-line">
-        <span>USER@VEIN_FORENSICS> </span>
-        <input type="text" id="t-input" placeholder="Type /SCAN, /DECRYPT, /STABILIZE..." autocomplete="off">
-    </div>
-
-    <div id="dossier">
-        <div class="void-stain" id="stain-1" style="top:-150px; left:-150px;"></div>
-        <div class="void-stain" id="stain-2" style="bottom:-150px; right:-150px;"></div>
-        
-        <div id="id-badge">
-            <div style="font-size:0.5rem; font-weight:bold; text-align:center; border-bottom:1px solid #000;">V.E.I.N. PERSONNEL ID</div>
-            <div class="id-pic"><img src="https://i.pinimg.com/736x/8f/1a/af/8f1aaf7f7632612a440ed33c8a9831d0.jpg"></div>
-            <div style="font-size:0.7rem; line-height:1.2;">
-                <strong>NAME:</strong> John Flame<br>
-                <strong>DEPT:</strong> Sync-Core Arch.<br>
-                <strong>CLEARANCE:</strong> LEVEL 5<br>
-                <center><img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" style="width:40px; margin-top:5px;"></center>
+    <div id="main-frame">
+        <div class="sidebar">
+            <div class="bio-scan">
+                <div style="font-size: 0.8rem; margin-bottom: 5px;">BIOMETRIC: ARCHITECT</div>
+                <div class="bio-pic"><img src="https://i.pinimg.com/736x/8f/1a/af/8f1aaf7f7632612a440ed33c8a9831d0.jpg"></div>
+                <div style="font-size: 0.7rem;">
+                    NAME: JOHN FLAME<br>
+                    ID: #3161400187<br>
+                    STATUS: <span style="color:var(--red);">DELETED</span>
+                </div>
+            </div>
+            <hr style="border:0.5px solid var(--cyan);">
+            <div style="font-size: 0.8rem;">
+                > SCANNING INTER-ZONE...<br>
+                > NIL DETECTED...<br>
+                > GLUTTONY DETECTED...
             </div>
         </div>
 
-        <div class="stamp">CLASSIFIED</div>
+        <div id="document-scroll">
+            <h1 style="font-family: 'Orbitron'; text-align: center; color: var(--red);">ENTITY_001_ARCHIVE</h1>
+            <center><p> CLEARANCE LEVEL: OMEGA</p></center>
+            <hr style="border-color: var(--cyan);">
+            
+            <h3>SUMMARY: THE SPATIAL ERASER</h3>
+            <p>Entity 001 is a sentient manifestation of the Void's "Correction Protocol." It is not a biological entity, but a reality-warping force that physically removes geometry from the Inter-Zone.</p>
+            
+            <h3>THE "NIL" INCIDENT</h3>
+            <p>In 2026, Courier NIL reached the Terminus. He was intercepted by 001. Telemetry showed his <span class="redacted">Sync-Core was Inverted</span> upon contact, turning his kinetic energy into a permanent glitch-state.</p>
 
-        <center>
-            <h1 style="font-family: 'Special Elite'; font-size: 2.2rem; margin-bottom: 0;">SUBJECT: ENTITY 001</h1>
-            <p style="margin-top: 5px;">PROJECT: CRITICAL VELOCITY // SECTOR 1C</p>
-        </center>
+            <h3>STALLION PROTOCOL</h3>
+            <p>If the path is deleted, you must maintain **Critical Velocity**. Do not look back. If you lose momentum, Entity 001 will successfully "Archive" your existence.</p>
 
-        <div class="evidence-photo">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemxvdTFtZ3lxNHhkdmZ3aG5obTFhaWMxYXQ0NTVtMm5lanVkdWRucSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/U4YclfvWJsZa4qEy9p/giphy.gif">
-            <p style="color:white; font-size:0.6rem; text-align:center; margin:5px;">FIG A: ABYSS MANIFESTATION</p>
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemxvdTFtZ3lxNHhkdmZ3aG5obTFhaWMxYXQ0NTVtMm5lanVkdWRucSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/U4YclfvWJsZa4qEy9p/giphy.gif" style="width: 100%; opacity: 0.4; margin-top: 20px;">
         </div>
 
-        <h3>I. PRELIMINARY DATA</h3>
-        <p>Entity 001 is the primary architect of the "De-Sync" phenomenon. It does not possess a physical form in our dimension, manifesting instead as a **Spatial Eraser**. </p>
-        <p>Current analysis suggests 001 is attracted to high-velocity movement. Every Courier deployed into the Inter-Zone increases the probability of a 001 manifestation by <span class="redacted">45%</span>.</p>
-
-        <h3>II. THE "STALLION" INCIDENT</h3>
-        <p>During the first expedition, 001 erased exactly <span class="redacted">4,200 Studs</span> of pathing in under three seconds. The resulting data loss was absolute. No memories were recovered from the Courier.</p>
-
-        <h3>III. THE NIL CONNECTION</h3>
-        <p>Subject NIL reached the Terminus on <span class="redacted">██/██/2026</span>. He was the first to survive contact with 001, though his Sync-Core was inverted during the event. He is now a permanent resident of the Inter-Zone.</p>
-
-        <div style="background:#ccc; padding:20px; border:2px dashed #000; margin-top:50px;">
-            <p><strong>URGENT WARNING:</strong> 001 has detected this data-stream. If you are reading this, the Abyss is currently locating your synchronization point. <strong>DO NOT STOP RUNNING.</strong></p>
+        <div class="sidebar sidebar-right">
+            <div style="text-align: center; border: 1px solid var(--red); padding: 10px;">
+                <div style="color: var(--red);">BREACH ALERT</div>
+                <div id="prox-val" style="font-size: 2rem;">0%</div>
+            </div>
+            <div style="margin-top: 20px; font-size: 0.8rem;">
+                > SYSTEM_STABILITY: DEGRADING<br>
+                > VOID_PRESSURE: RISING<br>
+                > RUNNER_001: TRACKING...
+            </div>
         </div>
     </div>
 
+    <div id="breach-monitor">
+        <div id="breach-fill"></div>
+    </div>
+
     <script>
-        const pInput = document.getElementById('p-input');
-        const login = document.getElementById('login');
-        const dossier = document.getElementById('dossier');
-        const cmdLine = document.getElementById('cmd-line');
-        const tInput = document.getElementById('t-input');
+        const pIn = document.getElementById('p-in');
+        const gate = document.getElementById('gate');
+        const frame = document.getElementById('main-frame');
+        const breachFill = document.getElementById('breach-fill');
+        const proxVal = document.getElementById('prox-val');
+        const bg = document.getElementById('corruption-bg');
         const SECRET = "001001";
 
-        const actx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(f, d, t='sine') {
-            const o = actx.createOscillator(); const g = actx.createGain();
-            o.type = t; o.frequency.value = f; g.gain.setValueAtTime(0.05, actx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
-            o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + d);
+        // --- AUDIO ---
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function sfx(f, d, t='sine') {
+            const o = ctx.createOscillator(); const g = ctx.createGain();
+            o.type = t; o.frequency.value = f; g.gain.setValueAtTime(0.05, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d);
+            o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + d);
         }
 
-        pInput.addEventListener('keyup', () => {
-            if(pInput.value === SECRET) {
-                playSound(880, 0.5);
-                login.style.display = 'none';
-                dossier.style.display = 'block';
-                cmdLine.style.display = 'block';
-                startHorror();
+        // --- LOGIN ---
+        pIn.addEventListener('keyup', () => {
+            sfx(400, 0.1, 'square');
+            if(pIn.value === SECRET) {
+                sfx(800, 0.5);
+                gate.style.display = 'none';
+                frame.style.display = 'grid';
+                startAbyssBreach();
             }
         });
 
-        tInput.onkeydown = (e) => {
-            if(e.key === 'Enter') {
-                const cmd = tInput.value.toLowerCase();
-                if(cmd === '/scan') { alert("001 PROXIMITY: 40% AND CLOSING."); }
-                else if(cmd === '/decrypt') { document.querySelectorAll('.redacted').forEach(r => r.style.background = 'transparent'); }
-                else if(cmd === '/stabilize') { prox = 0; alert("RE-SYNCING WITH THE SURFACE."); }
-                tInput.value = "";
-            }
-        };
-
-        let prox = 0;
-        function startHorror() {
+        // --- BREACH SYSTEM ---
+        let breach = 0;
+        function startAbyssBreach() {
             setInterval(() => {
-                prox += 1;
-                if(prox > 50) {
-                    dossier.style.transform = `rotate(${(Math.random()*2)-1}deg) translate(${(Math.random()*10)-5}px)`;
-                    document.getElementById('stain-1').style.opacity = (prox - 50) / 50;
-                    document.getElementById('stain-2').style.opacity = (prox - 50) / 50;
-                }
-                if(prox > 80) {
-                    const words = dossier.querySelectorAll('p, h3');
-                    words[Math.floor(Math.random()*words.length)].style.opacity = "0";
-                }
-                if(prox >= 100) {
+                breach += 1;
+                breachFill.style.width = breach + "%";
+                proxVal.innerText = breach + "%";
+                bg.style.opacity = (breach / 100) * 0.4;
+
+                if(breach % 10 === 0) sfx(60, 0.2, 'sawtooth');
+
+                if(breach > 60) document.body.classList.add('glitch');
+                
+                if(breach === 100) {
                     document.body.style.background = "red";
                     setTimeout(() => location.reload(), 500);
                 }
             }, 1500);
+
+            // JUMPSCARE HAND
+            setInterval(() => {
+                const hand = document.getElementById('hand-wipe');
+                hand.style.left = '100%';
+                sfx(40, 1, 'sawtooth', 0.2);
+                setTimeout(() => { hand.style.transition = 'none'; hand.style.left = '-100%'; }, 600);
+                setTimeout(() => { hand.style.transition = '0.6s cubic-bezier(0.19, 1, 0.22, 1)'; }, 700);
+            }, 20000);
         }
     </script>
 </body>
