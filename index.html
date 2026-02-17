@@ -2,192 +2,202 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>V.E.I.N. | ARCHITECT_BREACH_v10.4</title>
+    <title>V.E.I.N. | FORENSIC_DOSSIER_001</title>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
+            --alert-red: #ff3333;
             --vein-cyan: #00ffff;
-            --alert-red: #ff0000;
-            --paper: #d2d2d2;
-            --ink: #121212;
+            --paper: #e0e0e0;
+            --ink: #1a1a1a;
         }
 
         body, html {
-            margin: 0; padding: 0; background: #050505;
+            margin: 0; padding: 0; background: #0a0a0a;
             color: var(--vein-cyan); font-family: 'VT323', monospace;
             height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* --- THE DESK (BACKGROUND) --- */
-        #desk {
-            width: 100%; height: 100%;
-            background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
-            position: relative; z-index: 1;
+        /* --- THE SCAN HUD --- */
+        #hud-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            border: 20px solid rgba(0, 255, 255, 0.05); pointer-events: none; z-index: 1000;
+        }
+        #scan-bar {
+            position: absolute; width: 100%; height: 4px; background: var(--alert-red);
+            box-shadow: 0 0 20px var(--alert-red); top: 0; animation: scan 4s linear infinite; z-index: 1001;
+        }
+        @keyframes scan { 0% {top: 0%;} 100% {top: 100%;} }
+
+        /* --- THE PHYSICAL DOCUMENT --- */
+        #dossier {
+            background: var(--paper); color: var(--ink);
+            width: 850px; height: 90vh; padding: 60px;
+            box-shadow: 0 0 100px rgba(0,0,0,1); position: relative;
+            font-family: 'Courier Prime', monospace; overflow-y: auto;
+            border: 1px solid #999; transform: rotate(-0.5deg);
+            display: none; transition: transform 0.1s;
         }
 
-        /* --- PHYSICAL DOSSIERS --- */
-        .dossier {
-            position: absolute; background: var(--paper); color: var(--ink);
-            width: 420px; padding: 40px; box-shadow: 10px 10px 40px rgba(0,0,0,0.9);
-            border: 1px solid #999; transform: rotate(-1deg); display: none;
-            font-family: 'Courier Prime', monospace; cursor: grab; z-index: 10;
+        .stamp {
+            position: absolute; top: 40px; right: 60px; border: 5px solid var(--alert-red);
+            color: var(--alert-red); padding: 10px 20px; font-family: 'Special Elite', cursive;
+            transform: rotate(15deg); font-size: 2rem; opacity: 0.8; mix-blend-mode: multiply;
         }
-        .dossier:active { cursor: grabbing; }
-        .dossier-header { border-bottom: 2px solid #000; margin-bottom: 10px; font-weight: bold; }
 
-        /* --- EMPLOYEE ID --- */
-        #id-card {
-            position: absolute; width: 200px; height: 300px;
-            background: #fff; border-radius: 10px; color: #000;
-            padding: 15px; box-shadow: 5px 5px 20px #000;
-            display: none; cursor: grab; z-index: 50; transform: rotate(5deg);
+        /* --- EMPLOYEE ID BADGE --- */
+        #id-badge {
+            position: absolute; top: -30px; left: 40px; width: 180px; height: 260px;
+            background: #fff; border: 1px solid #ccc; box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+            padding: 10px; transform: rotate(-5deg); z-index: 50; color: #000;
         }
-        .id-photo { width: 100%; height: 120px; background: #333; margin-bottom: 10px; overflow: hidden; }
-        .id-photo img { width: 100%; filter: grayscale(1); }
+        .id-pic { width: 100%; height: 110px; background: #222; margin-bottom: 5px; overflow:hidden; }
+        .id-pic img { width: 100%; filter: grayscale(1) contrast(1.2); }
 
-        /* --- TERMINAL --- */
-        #terminal-bar {
-            position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9);
-            border-top: 2px solid var(--vein-cyan); padding: 10px 20px; z-index: 1000;
+        /* --- TAPED GIF PHOTO --- */
+        .evidence-photo {
+            float: right; width: 250px; border: 10px solid #fff;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3); margin: 20px;
+            transform: rotate(3deg); background: #000;
         }
-        #t-input { background: transparent; border: none; color: var(--vein-cyan); font-family: 'VT323'; font-size: 1.5rem; width: 80%; outline: none; }
+        .evidence-photo img { width: 100%; opacity: 0.7; filter: sepia(0.5); }
 
-        /* --- ABYSS CAM --- */
-        .cam-window {
-            position: absolute; width: 350px; background: #000; border: 3px solid #444;
-            display: none; z-index: 20; box-shadow: 0 0 30px rgba(0,255,255,0.1);
+        /* --- TERMINAL INPUT --- */
+        #cmd-line {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 850px; background: rgba(0,0,0,0.8); border: 1px solid var(--vein-cyan);
+            padding: 10px; z-index: 2000; display: none;
         }
-        .cam-feed { width: 100%; opacity: 0.5; filter: contrast(1.5) brightness(0.8); }
+        #t-input { background: transparent; border: none; color: var(--vein-cyan); width: 90%; font-family: 'VT323'; font-size: 1.5rem; outline: none; }
 
-        /* --- UI GIMMICKS --- */
-        #proximity-alert {
-            position: fixed; top: 20px; right: 20px; font-size: 2rem;
-            color: var(--alert-red); text-shadow: 0 0 10px red; display: none;
+        /* --- LOGIN --- */
+        #login {
+            position: fixed; width: 100%; height: 100%; background: #000;
+            z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .redacted { background: #000; color: #000; transition: 0.3s; }
+        #p-input { background: transparent; border: 1px solid cyan; color: cyan; font-size: 3rem; text-align: center; outline: none; width: 350px; }
+
+        /* --- HORROR ELEMENTS --- */
+        .void-stain {
+            position: absolute; width: 300px; height: 300px; background: black;
+            border-radius: 50%; filter: blur(50px); opacity: 0; pointer-events: none;
+        }
+        .redacted { background: #000; color: #000; cursor: help; }
         .redacted:hover { background: transparent; }
-
-        /* --- HORROR FX --- */
-        #jumpscare-hand {
-            position: fixed; top: 0; left: -100%; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.1); z-index: 9000; pointer-events: none;
-        }
-        .glitch-shake { animation: shake 0.1s infinite; }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-2px, -1px); }
-            100% { transform: translate(1px, 1px); }
-        }
     </style>
 </head>
 <body class="crt">
 
-    <div id="desk">
-        <div id="proximity-alert">PROXIMITY: <span id="prox-pct">0</span>%</div>
-        <div id="jumpscare-hand"></div>
+    <div id="hud-overlay"><div id="scan-bar"></div></div>
 
-        <div id="login" style="position:fixed; width:100%; height:100%; background:#000; z-index:10000; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <h1>V.E.I.N. AUTHORITY ARCHIVE v10.4</h1>
-            <input type="password" id="p-input" maxlength="6" style="background:transparent; border:1px solid cyan; color:cyan; font-size:3rem; text-align:center; outline:none;" placeholder="000000">
-            <p style="margin-top:20px; opacity:0.5;">HINT: ENTITY_001 + RUNNER_001</p>
-        </div>
+    <div id="login">
+        <h1 style="letter-spacing: 5px;">V.E.I.N. ARCHIVE ACCESS</h1>
+        <input type="password" id="p-input" maxlength="6" autofocus placeholder="______">
+        <p style="margin-top: 20px; color: var(--alert-red); animation: pulse 1s infinite;">[ UNAUTHORIZED ACCESS IS A TERMINABLE OFFENSE ]</p>
+    </div>
 
-        <div id="id-card" style="top:50px; left:50px;">
-            <div style="font-size:0.6rem; font-weight:bold; border-bottom:1px solid #000;">V.E.I.N. PERSONNEL</div>
-            <div class="id-photo"><img src="https://i.pinimg.com/736x/8f/1a/af/8f1aaf7f7632612a440ed33c8a9831d0.jpg"></div>
-            <div style="font-size:0.8rem;">
+    <div id="cmd-line">
+        <span>USER@VEIN_FORENSICS> </span>
+        <input type="text" id="t-input" placeholder="Type /SCAN, /DECRYPT, /STABILIZE..." autocomplete="off">
+    </div>
+
+    <div id="dossier">
+        <div class="void-stain" id="stain-1" style="top:-150px; left:-150px;"></div>
+        <div class="void-stain" id="stain-2" style="bottom:-150px; right:-150px;"></div>
+        
+        <div id="id-badge">
+            <div style="font-size:0.5rem; font-weight:bold; text-align:center; border-bottom:1px solid #000;">V.E.I.N. PERSONNEL ID</div>
+            <div class="id-pic"><img src="https://i.pinimg.com/736x/8f/1a/af/8f1aaf7f7632612a440ed33c8a9831d0.jpg"></div>
+            <div style="font-size:0.7rem; line-height:1.2;">
                 <strong>NAME:</strong> John Flame<br>
-                <strong>ROLE:</strong> Lead Architect<br>
-                <strong>ID:</strong> 316140-JF<br>
-                <strong>STATUS:</strong> <span style="color:red;">MISSING</span>
+                <strong>DEPT:</strong> Sync-Core Arch.<br>
+                <strong>CLEARANCE:</strong> LEVEL 5<br>
+                <center><img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" style="width:40px; margin-top:5px;"></center>
             </div>
         </div>
 
-        <div class="dossier" id="dos-001" style="top:100px; left:400px;">
-            <div class="dossier-header">INCIDENT_LOG // HAZARD_001</div>
-            <p><strong>SUBJECT:</strong> The Primordial Void</p>
-            <p>Entity 001 is not a creature. It is a **Spatial Purge**. It erases the ground beneath the Courier's feet.</p>
-            <p><strong>CURRENT THREAT:</strong> If this terminal remains synced for >5 minutes, 001 will locate your IP and begin hardware deletion.</p>
+        <div class="stamp">CLASSIFIED</div>
+
+        <center>
+            <h1 style="font-family: 'Special Elite'; font-size: 2.2rem; margin-bottom: 0;">SUBJECT: ENTITY 001</h1>
+            <p style="margin-top: 5px;">PROJECT: CRITICAL VELOCITY // SECTOR 1C</p>
+        </center>
+
+        <div class="evidence-photo">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemxvdTFtZ3lxNHhkdmZ3aG5obTFhaWMxYXQ0NTVtMm5lanVkdWRucSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/U4YclfvWJsZa4qEy9p/giphy.gif">
+            <p style="color:white; font-size:0.6rem; text-align:center; margin:5px;">FIG A: ABYSS MANIFESTATION</p>
         </div>
 
-        <div class="cam-window" id="win-cam" style="bottom:100px; right:50px;">
-            <div style="background:#222; padding:5px; font-size:0.7rem;">LIVE_FEED // SECTOR_D</div>
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemxvdTFtZ3lxNHhkdmZ3aG5obTFhaWMxYXQ0NTVtMm5lanVkdWRucSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/U4YclfvWJsZa4qEy9p/giphy.gif" class="cam-feed">
-        </div>
+        <h3>I. PRELIMINARY DATA</h3>
+        <p>Entity 001 is the primary architect of the "De-Sync" phenomenon. It does not possess a physical form in our dimension, manifesting instead as a **Spatial Eraser**. </p>
+        <p>Current analysis suggests 001 is attracted to high-velocity movement. Every Courier deployed into the Inter-Zone increases the probability of a 001 manifestation by <span class="redacted">45%</span>.</p>
 
-        <div id="terminal-bar">
-            <span>ADMIN@VEIN_LOCAL> </span>
-            <input type="text" id="t-input" placeholder="Type /SCAN, /OVERRIDE, or /LOGS..." autocomplete="off">
+        <h3>II. THE "STALLION" INCIDENT</h3>
+        <p>During the first expedition, 001 erased exactly <span class="redacted">4,200 Studs</span> of pathing in under three seconds. The resulting data loss was absolute. No memories were recovered from the Courier.</p>
+
+        <h3>III. THE NIL CONNECTION</h3>
+        <p>Subject NIL reached the Terminus on <span class="redacted">██/██/2026</span>. He was the first to survive contact with 001, though his Sync-Core was inverted during the event. He is now a permanent resident of the Inter-Zone.</p>
+
+        <div style="background:#ccc; padding:20px; border:2px dashed #000; margin-top:50px;">
+            <p><strong>URGENT WARNING:</strong> 001 has detected this data-stream. If you are reading this, the Abyss is currently locating your synchronization point. <strong>DO NOT STOP RUNNING.</strong></p>
         </div>
     </div>
 
     <script>
         const pInput = document.getElementById('p-input');
-        const tInput = document.getElementById('t-input');
         const login = document.getElementById('login');
-        const proxPct = document.getElementById('prox-pct');
+        const dossier = document.getElementById('dossier');
+        const cmdLine = document.getElementById('cmd-line');
+        const tInput = document.getElementById('t-input');
         const SECRET = "001001";
 
-        // --- DRAGGABLE ---
-        const elements = document.querySelectorAll('.dossier, #id-card, .cam-window');
-        elements.forEach(el => {
-            let down = false, off = [0,0];
-            el.onmousedown = (e) => { down = true; el.style.zIndex = 100; off = [el.offsetLeft - e.clientX, el.offsetTop - e.clientY]; };
-            document.onmousemove = (e) => { if(down) { el.style.left = (e.clientX + off[0])+'px'; el.style.top = (e.clientY + off[1])+'px'; } };
-            document.onmouseup = () => down = false;
-        });
-
-        // --- AUDIO ---
         const actx = new (window.AudioContext || window.webkitAudioContext)();
-        function playPulse(f, d) {
+        function playSound(f, d, t='sine') {
             const o = actx.createOscillator(); const g = actx.createGain();
-            o.type = 'sine'; o.frequency.value = f;
-            g.gain.setValueAtTime(0.1, actx.currentTime);
+            o.type = t; o.frequency.value = f; g.gain.setValueAtTime(0.05, actx.currentTime);
             g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
-            o.connect(g); g.connect(actx.destination);
-            o.start(); o.stop(actx.currentTime + d);
+            o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + d);
         }
 
-        // --- LOGIN ---
         pInput.addEventListener('keyup', () => {
-            if (pInput.value === SECRET) {
+            if(pInput.value === SECRET) {
+                playSound(880, 0.5);
                 login.style.display = 'none';
-                elements.forEach(e => e.style.display = 'block');
-                document.getElementById('proximity-alert').style.display = 'block';
+                dossier.style.display = 'block';
+                cmdLine.style.display = 'block';
                 startHorror();
             }
         });
 
-        // --- COMMANDS ---
         tInput.onkeydown = (e) => {
             if(e.key === 'Enter') {
                 const cmd = tInput.value.toLowerCase();
-                if(cmd === '/scan') { alert("SCANNING... ENTITY 001 AT 400 STUDS."); }
-                else if(cmd === '/override') { proxVal = 0; alert("SYNC_CORE_STABILIZED."); }
-                else if(cmd === '/logs') { document.getElementById('dos-001').innerHTML += "<br><b>[DECRYPTED]:</b> Flame knew NIL would fail. He planned it."; }
+                if(cmd === '/scan') { alert("001 PROXIMITY: 40% AND CLOSING."); }
+                else if(cmd === '/decrypt') { document.querySelectorAll('.redacted').forEach(r => r.style.background = 'transparent'); }
+                else if(cmd === '/stabilize') { prox = 0; alert("RE-SYNCING WITH THE SURFACE."); }
                 tInput.value = "";
             }
         };
 
-        // --- HORROR PROGRESSION ---
-        let proxVal = 0;
+        let prox = 0;
         function startHorror() {
             setInterval(() => {
-                proxVal += 1;
-                proxPct.innerText = proxVal;
-                playPulse(60, 0.1); // Heartbeat
-
-                if(proxVal > 50) { document.body.classList.add('glitch-shake'); }
-                if(proxVal > 80) { 
-                    // DELETE RANDOM ELEMENTS
-                    const items = document.querySelectorAll('p, b, span');
-                    items[Math.floor(Math.random()*items.length)].remove();
+                prox += 1;
+                if(prox > 50) {
+                    dossier.style.transform = `rotate(${(Math.random()*2)-1}deg) translate(${(Math.random()*10)-5}px)`;
+                    document.getElementById('stain-1').style.opacity = (prox - 50) / 50;
+                    document.getElementById('stain-2').style.opacity = (prox - 50) / 50;
                 }
-                if(proxVal >= 100) {
-                    document.getElementById('jumpscare-hand').style.left = '0%';
+                if(prox > 80) {
+                    const words = dossier.querySelectorAll('p, h3');
+                    words[Math.floor(Math.random()*words.length)].style.opacity = "0";
+                }
+                if(prox >= 100) {
+                    document.body.style.background = "red";
                     setTimeout(() => location.reload(), 500);
                 }
-            }, 2000);
+            }, 1500);
         }
     </script>
 </body>
